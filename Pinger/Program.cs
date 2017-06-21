@@ -1,3 +1,6 @@
+// Syntax 
+// use 'pinger.exe /?' for help
+// 
 using System;
 using System.Threading;
 using System.Net.NetworkInformation;
