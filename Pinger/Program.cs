@@ -204,7 +204,10 @@ namespace Pinger
                              "\t-p <n>:\tPolling period. Every 'n' seconds\n"+
                              "\nReturn Codes:" + "\n" +
                              "\t0\tSuccessfull Ping" + "\n" +
-                             "\t1\tUnsuccessfull or other errors reported" + "\n");
+                             "\t1\tUnsuccessfull or other errors reported" + "\n" +
+                             "\nActions on Failure (To be implemented):" + "\n" +
+                             "\t-t\tPerform a traceroute on failure" + "\n" +
+                             "\t-w <fullURL>:\tPerform a url check on failure" + "\n");
         }
     }
 }
