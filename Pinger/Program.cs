@@ -10,7 +10,6 @@ namespace Pinger
 {
     class Program
     {
-
         static int Main(string[] args)
         {
             Ping pingSender = new Ping();
@@ -24,16 +23,15 @@ namespace Pinger
             string status_curr = "";
             string status_previous = "not the same";
             int defaultPollingTimeInMilliseconds = 1000; //iteration defaultPollingTimeInMilliseconds in ms or can be seen as polling
-            int sleeptime = defaultPollingTimeInMilliseconds;                    
+            int sleeptime = defaultPollingTimeInMilliseconds;               
             int runtimeError = 0;
-            // Use the default Ttl value which is 128,
-            // but change the fragmentation behavior.
-            options.DontFragment = true;
-            
             // Create a buffer of 32 bytes of data to be transmitted.
             string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             byte[] buffer = Encoding.ASCII.GetBytes(data);
-            int timeout = 120;
+            int timeout = 1000; // amount of time in ms to wait for the ping reply
+                // Use the default Ttl value which is 128,
+                // but change the fragmentation behavior.            
+               
             // iterate through the arguments
             string[] arguments = Environment.GetCommandLineArgs();
             for (int argIndex=0; argIndex < arguments.Length; argIndex++)
@@ -92,6 +90,35 @@ namespace Pinger
                             runtimeError = 1;
                         }
                         break;
+                    case "-T": // smart switch
+                        // Show OK and Down and OK, implies -C
+                        try
+                        {
+                            argIndex++; // get the next value, hopefully a digit
+                            //bool success = int.TryParse(arguments[argIndex], out sleeptime);
+                            timeout = int.Parse(arguments[argIndex]) * 1000;
+                        }
+                        catch (System.ArgumentNullException)
+                        {
+                            Console.WriteLine("Please specify a valid timeout value in seconds larger than 1 seconds.");
+                            runtimeError = 1;
+                        }
+                        catch (System.FormatException)
+                        {
+                            Console.WriteLine("Please specify a valid timeout value in seconds larger than 1 seconds.");
+                            runtimeError = 1;
+                        }
+                        catch (System.OverflowException)
+                        {
+                            Console.WriteLine("Please specify a valid timeout value in seconds larger than 1 seconds.");
+                            runtimeError = 1;
+                        }
+                        catch (System.IndexOutOfRangeException)
+                        {
+                            Console.WriteLine("Please specify a valid timeout value in seconds larger than 1 seconds.");
+                            runtimeError = 1;
+                        }
+                        break;
                     default:
                         if (items == 0) target = arguments[argIndex];
                         items++; 
@@ -111,13 +138,22 @@ namespace Pinger
             }
             else
             {
-                Console.WriteLine("Pinging host {0} at {1} seconds interval", target, sleeptime/1000);
+                Console.WriteLine("Pinging {0} at {1} sec interval & timeout of {2} seconds", target, sleeptime/1000, timeout/1000);
+                Console.WriteLine("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                int pingCount = 1;
                 do
                 {
                     try
-                    {                       
-                        PingReply reply = pingSender.Send(target, timeout, buffer, options);
+                    {
                         
+                        options.DontFragment = true;
+                        PingReply reply = pingSender.Send(target, timeout, buffer, options);
+                        DateTime date = DateTime.Now;
+                        string optionsTtl = "-";
+                        if (reply != null && reply.Options != null)                            
+                        {
+                            optionsTtl = reply.Options.Ttl.ToString();
+                        }
                         status_curr = (reply != null ? reply.Status.ToString() : "Access Denied");
                         //status_curr = reply.Status.ToString();
 
@@ -128,11 +164,13 @@ namespace Pinger
                         {
                             if (!return_code_only && !verbose)
                             {
-                                Console.WriteLine("{0},{1}({2}),{3},{4}ms", DateTime.Now, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime);
+                                Console.WriteLine("{0},{1}({2}),{3},{4}ms,{5},{6}", DateTime.Now, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime, optionsTtl, pingCount);
+                                //Console.WriteLine("{0},{1}({2}),{3},{4}ms", DateTime.Now, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime);
                             }
                             else if (!return_code_only && verbose)
                             {
-                                Console.WriteLine("{0},{1}(ifAdrr={2}),status={3},rndtrip={4}ms\n", DateTime.Now, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime);
+                                Console.WriteLine("poltime={0},trgt={1}(ifAdrr={2}),status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", date, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime, optionsTtl, pingCount);
+                                //Console.WriteLine("poltime={0},trgt={1}(ifAdrr={2}),status={3},rndtrip={4}ms\n", date, target, (reply.Address == null ? "(unknown IP)" : reply.Address.ToString()), status_curr, reply.RoundtripTime);
                             }
                             else
                                 Console.Write("\n");
@@ -166,6 +204,7 @@ namespace Pinger
                     {
                         //Console.WriteLine("{0},{1},{2},Status Changed", DateTime.Now, target, status_curr);
                     }
+                    pingCount++;
                 //} while (loop || loopcount <= maxloopcount);
                 } while (loop );
 
@@ -202,12 +241,14 @@ namespace Pinger
                              "\t-r:\tReturn Code only. Pinger does not output anything to screen.\n"+
                              "\t-s:\tSmart switch. Pinger only shows pinger response \n\t\tif the current ping status is different to the last one \n"+
                              "\t-p <n>:\tPolling period. Every 'n' seconds\n"+
+                             "\t-t <n>:\tTimeout value. The script waits for 'n' seconds before calling it a ping timeout.\n" +
+                             "\t-v: \tVerbose output\n" +
                              "\nReturn Codes:" + "\n" +
                              "\t0\tSuccessfull Ping" + "\n" +
                              "\t1\tUnsuccessfull or other errors reported" + "\n" +
                              "\nActions on Failure (To be implemented):" + "\n" +
-                             "\t-t\tPerform a traceroute on failure" + "\n" +
-                             "\t-w <fullURL>:\tPerform a url check on failure" + "\n");
+                             "\t-traceroute\tPerform a traceroute on failure" + "\n" +
+                             "\t-webcheck <fullURL>:\tPerform a url check on failure" + "\n");
         }
     }
 }
