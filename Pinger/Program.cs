@@ -43,10 +43,37 @@ namespace Pinger
         public PingerTarget(string targetName)
         {
             this.hostNameOrAddress = targetName;
-            this.Errorcode = 0; // No Errors
+            this.dnsName = "-";
+            this.dnsipaddr = "-";
+            this.replyDnsipaddr = "-";
+            this.replyRoundTrip = 0;
+            this.dnsLookupStatus = "-";
+            this.status = "-";
+            this.statusPrevious = "-";
+            this.errorMsg = "-";
+            this.optionsTtl = "-";
+            this.errorCode = 0; // No Errors
+            this.offlineCount = 0;
+            this.onlineCount = 0;
+            this.pingCount = 0;
         }
+
         public PingerTarget()
         {
+            this.hostNameOrAddress = "-";
+            this.dnsName = "-";
+            this.dnsipaddr = "-";
+            this.replyDnsipaddr = "-";
+            this.replyRoundTrip = 0;
+            this.dnsLookupStatus = "-";
+            this.status = "-";
+            this.statusPrevious = "-";
+            this.errorMsg = "-";
+            this.optionsTtl = "-";
+            this.errorCode = 0; // No Errors
+            this.offlineCount = 0;
+            this.onlineCount = 0;
+            this.pingCount = 0;
         }
         
         public string Target
@@ -80,9 +107,20 @@ namespace Pinger
             get { return status; }
             set {
                 statusPrevious = status;
-                status = value;
+                status = value;              
             }
         }
+        public int OnlineCount
+        {
+            get { return onlineCount;  }
+            set { onlineCount = value; }
+        }
+        public int OfflineCount
+        {
+            get { return offlineCount; }
+            set { offlineCount = value; }
+        }
+
         public string PreviousStatus
         {
             get { return statusPrevious; }
@@ -90,7 +128,16 @@ namespace Pinger
         public int Errorcode
         {
             get { return errorCode; }
-            set { errorCode = value; }
+            set {
+                errorCode = value;
+                if(errorCode == 0)
+                {
+                    onlineCount++;
+                } else if (errorCode == 1)
+                {
+                    offlineCount++;
+                }
+            }
         }
 
         public string ErrorMsg
@@ -323,7 +370,7 @@ namespace Pinger
                     //VERBOSE for DEBUG
 
                     try
-                    {                        
+                    {
                         options.DontFragment = true;
                         PingReply reply;
                         if (pt.IPAddress != null)
@@ -333,11 +380,11 @@ namespace Pinger
                         {
                             reply = pingSender.Send(pt.Hostname, timeout, buffer, options);
                         }
-                                            
-                        if (reply != null && reply.Options != null)                            
+
+                        if (reply != null && reply.Options != null)
                         {
                             pt.OptionsTtl = reply.Options.Ttl.ToString();
-                        }else
+                        } else
                         {
                             pt.OptionsTtl = "-";
                         }
@@ -345,7 +392,7 @@ namespace Pinger
                         pt.ReplyIPAddress = reply.Address.ToString(); // ? reply.Address.ToString() : "-";
                         pt.RoundTrip = reply.RoundtripTime; //? reply.RoundtripTime : -1);
                         pt.Status = reply.Status.ToString(); //? reply.Status.ToString() : "-");
-// logThis(reply.Status.ToString());
+                                                             // logThis(reply.Status.ToString());
                         if (reply.Status.ToString() == "DestinationHostUnreachable")
                         {
                             pt.Errorcode = 1;
@@ -353,7 +400,7 @@ namespace Pinger
                         }
 
 
-// Console.WriteLine("pt-ErrorCode = " + pt.Errorcode);
+                        // Console.WriteLine("pt-ErrorCode = " + pt.Errorcode);
                         //pt.Status = (reply != null ?  : "Access Denied");
                         //status_curr = reply.Status.ToString();
 
@@ -363,30 +410,29 @@ namespace Pinger
                             Thread.Sleep(sleeptime);
                     }
                     catch (System.Net.Sockets.SocketException se)
-                    {                    
+                    {
                         pt.Errorcode = 1;
                         pt.ErrorMsg = se.Message;
                         pt.Status = se.Message;
                         Thread.Sleep(sleeptime);
                     }
                     catch (System.Net.NetworkInformation.PingException pe)
-                    {    
+                    {
                         pt.Errorcode = 1;
                         pt.ErrorMsg = pe.Message;
                         pt.Status = pe.Message;
                         Thread.Sleep(sleeptime);
                     }
                     catch (System.NullReferenceException nre)
-                    {                     
+                    {
                         pt.Errorcode = 1;
                         pt.ErrorMsg = nre.Message;
                         // pt.Status = nre.Message;
                         pt.Status = "DestinationHostUnreachable";
                         Thread.Sleep(sleeptime);
-                    }                    
+                    }
                     finally
                     {
-
                         if (String.Equals(pt.PreviousStatus, pt.Status) && smartping)
                         {
                             // don't print out anything because the previous status is the same as the current. 
@@ -396,6 +442,7 @@ namespace Pinger
                             // Console.WriteLine("In HERE");
                             if (pt.Errorcode == 0)
                             {
+
                                 for (int i = 0; i < 2; i++)
                                 {
                                     Console.Beep();
