@@ -6,6 +6,7 @@ using System.Threading;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Net;
+using System.IO;
 
 namespace Pinger
 {
@@ -205,12 +206,20 @@ namespace Pinger
             bool verbose = false; // true = print additional versbose stuff for the program
             bool loop = true; // true = ping will loop until Ctrl + C is pressed
             int items = -1; // compensate for "pinger" counting as 1 command line argument
+            int maxcount = 1;
+            bool maxCountSpecified = false;
             bool smartping = true; // by default use the smart ping switch
             bool return_code_only = false;
             string target = ""; // target IP address or DNS name to ping
             int defaultPollingTimeInMilliseconds = 1000; //iteration defaultPollingTimeInMilliseconds in ms or can be seen as polling
+            bool stopBeeps = true;
+            bool outputScreenToCSV = false; // Output only what's on the screen to CSV. So if printing only changes then it will only output to file that
+            bool outputAllToCSV = false; // Output every ping response to CSV, even if you are using the smart ping function which only prints the status changes
+            string outputCSVFilename="";
+            string outstr = "";
             int sleeptime = defaultPollingTimeInMilliseconds;               
             int runtimeError = 0;
+            int runtimeInHours = 0;
             // Create a buffer of 32 bytes of data to be transmitted.
             string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             byte[] buffer = Encoding.ASCII.GetBytes(data);
@@ -239,7 +248,80 @@ namespace Pinger
                         break;
                     case "-N":
                         loop = false;
-              //          logThis(loop.ToString());
+                        maxcount = 1;
+                        break;
+                    case "-Q":
+                        //verbose = false;
+                        stopBeeps = true;
+                        break;
+                    case "-C":
+                        //verbose = false;
+                        try
+                        {
+                            argIndex++; // get the next value, hopefully a digit
+                            //bool success = int.TryParse(arguments[argIndex], out sleeptime);
+                            maxCountSpecified = true;
+                            maxcount = int.Parse(arguments[argIndex]);
+                        }
+                        catch (System.ArgumentNullException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.FormatException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.OverflowException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.IndexOutOfRangeException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        break;
+                    case "-H":
+                        try
+                        {
+                            argIndex++; // get the next value, hopefully a digit
+                            //bool success = int.TryParse(arguments[argIndex], out sleeptime);
+                            runtimeInHours = int.Parse(arguments[argIndex]);
+                            maxCountSpecified = false;
+                        }
+                        catch (System.ArgumentNullException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.FormatException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.OverflowException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        catch (System.IndexOutOfRangeException)
+                        {
+                            logThis("Please specify a valid number.");
+                            runtimeError = 1;
+                        }
+                        break;
+                    case "-CSV":
+                        //verbose = false;
+                        outputScreenToCSV = true;
+                        outputAllToCSV=false;
+                        break;
+                    case "-CSVALL":
+                        //verbose = false;
+                        outputScreenToCSV = false;
+                        outputAllToCSV = true;
                         break;
                     case "-R":
                         //verbose = false;
@@ -281,7 +363,6 @@ namespace Pinger
                         try
                         {
                             argIndex++; // get the next value, hopefully a digit
-                            //bool success = int.TryParse(arguments[argIndex], out sleeptime);
                             timeout = int.Parse(arguments[argIndex]) * 1000;
                         }
                         catch (System.ArgumentNullException)
@@ -308,7 +389,6 @@ namespace Pinger
                     default:
                         if (items == 0) target = arguments[argIndex];
                         items++; 
-            //            logThis("Target = " + target + ", Items =" + items);
                         break;
                 }
             }
@@ -318,7 +398,6 @@ namespace Pinger
 
             if ( items > 1 || target.Length <= 0 )
             {
-                //logThis("Choose to ping test one (1) host at a time (return code=1)"); 
                 ShowSyntax();
                 runtimeError = 1;
             }
@@ -330,7 +409,6 @@ namespace Pinger
                
                 string[] dnsresults = DNSLookup(pt.Target);
 
-                //if (dnsresults[0]) {
                 if (dnsresults.Length > 0)
                 {
                     pt.Hostname = dnsresults[0];
@@ -340,17 +418,30 @@ namespace Pinger
                 {
                     pt.Hostname = pt.Target;
                 }
+                
+
                 if (!return_code_only)
                 {
                     logThis("Pinging " + pt.Target + " at " + sleeptime / 1000 + "sec interval & timeout of " + timeout / 1000 + " seconds");
                     logThis("Looking up DNS : ");
                     logThis("      Hostname : " + pt.Hostname);
                     logThis("      IPAddress: " + pt.IPAddress);
-                    //logThis("      Lookup Status: " + pt.DNSLookupStatus);
                     logThis("");
-                    logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                    if (!maxCountSpecified && runtimeInHours > 0)
+                    {
+                        maxcount = (runtimeInHours * 60 * 60) / (sleeptime / 1000);
+                        //logThis(">> sleeptime = " + sleeptime / 1000 + ",runtimeInHours=" + runtimeInHours + "hrs,maxcount=" + maxcount +"<<");
+                        logThis(">> Runtime: " + runtimeInHours + "hrs, Total ping expected=" + maxcount + " <<");
+                    }
+                }                
+                if (outputScreenToCSV || outputAllToCSV)
+                {
+                    outputCSVFilename = "pinger-" + pt.Target.Replace('.', '_').Trim() + "_" + ".txt";
+                    logThis(">> Responses will be saved to " + outputCSVFilename);
+                    logThis("");
+                    logToFile("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n", outputCSVFilename);
                 }
-
+                logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
                 do
                 {
                     pt.DateLatestStatus = DateTime.Now;                    
@@ -414,62 +505,56 @@ namespace Pinger
                             pt.HostUnreachableCountUpdate++;
                         } else
                         {
-                            Console.WriteLine("Unknown ping error code");
+                            logThis("Unknown ping error code");
+                        }
+
+                        // Create the output string
+                        if (!verbose)
+                        {
+                            outstr = pt.DateLatestStatus + "," + pt.Hostname + "," + pt.PingStatus + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.HostPingCount;
+                        }
+                        else
+                        {
+                            outstr = "poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",pcount" + pt.HostPingCount;
                         }
 
                         if (String.Equals(pt.PreviousPingStatus, pt.PingStatus) && smartping)
                         {
-                            // don't print out anything because the previous status is the same as the current. 
+                            // don't print out anything because the previous status is the same as the current.       
+                            if(outputAllToCSV)
+                            {
+                                logToFile(outstr, outputCSVFilename);
+                            }
                         }
                         else
                         {
-                            // Console.WriteLine("In HERE");
-                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && smartping)
+                            // START BEEPING ON STATUS CHANGE
+                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && smartping && !stopBeeps)
                             {                                
                                 for (int i = 0; i < 2; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && smartping)
+                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && smartping && !stopBeeps)
                             {
                                 for (int i = 0; i < 4; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            if (!return_code_only && !verbose)
+                            // Print to screen
+                            
+                            if (outputScreenToCSV || outputAllToCSV)
                             {
-                                //Console.WriteLine("{0},{1}({2}),{3},{4}ms,{5},{6}", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
-                                Console.WriteLine(pt.DateLatestStatus +","+ pt.Hostname + "," + pt.PingStatus + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.HostPingCount);
+                                logToFile(outstr, outputCSVFilename);
                             }
-                            else if (!return_code_only && verbose)
-                            {
-                                // for situations where you want the column headers inline with the results
-                                //Console.WriteLine("poltime={0},trgt={1}(ifAdrr={2}),status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
-                                //Console.WriteLine("poltime={0},trgt={1},status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
-                                Console.WriteLine("poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",pcount" + pt.HostPingCount);
-                            }
-                            else
-                                Console.Write("\n");
-
-                        }
+                            logThis(outstr);
+                        } 
                     }
-                    //VERBOSE for DEBUG
                     if (verbose) { pt.Printout(); }
-                    //VERBOSE for DEBUG
-                    if (loop)
-                        Thread.Sleep(sleeptime);
-                    //} while (loop || loopcount <= maxloopcount);
-                } while (loop );
-
-               // Set return codes
-/*                if (!status)
-                {
-                    if (verbose) logThis("Bad end to this script  (return Code 1)");
-                    error = 1;
-                }
- * */
+                    if (loop) { Thread.Sleep(sleeptime); }
+                } while (loop && pt.HostPingCount < maxcount);
             }
             return pt.Errorcode;
         }
@@ -478,15 +563,20 @@ namespace Pinger
         /// Function: ShowHeader
         /// Information: Displays Author and application details.
         /// </summary>
-        static public void logThis(string msg)
+        public static void logThis(string msg)
         {
             Console.WriteLine(msg);
         }
-        static public void verboseDEBUG(PingerTarget ptTemp)
+
+        public static void logToFile(string msg, string filename)
         {
-
+            using (StreamWriter w = File.AppendText(filename))
+            {
+                //Log(msg, w);
+                w.WriteLine(msg);
+            }
         }
-
+    
         static string[] DNSLookup(string hostNameOrAddress)
         {
             //Console.WriteLine("Lookup: {0}\n", hostNameOrAddress);
@@ -528,11 +618,16 @@ namespace Pinger
             //"\t-s:\tSmart switch. Pinger only shows pinger response \n\t\tif the current ping status is different to the last one \n"+
             logThis("[OPTIONS]: \n"+
                              "\t-n:\tNo loop. Stops pinger after one attempt \n"+
-                             "\t-r:\tReturn Code only. Pinger does not output anything to screen.\n"+
+                             "\t-c:\tQuit after 'n' number of poll\n" +
+                             "\t-r:\tReturn Code only. Pinger does not output anything to screen.\n" +
                              "\t-s:\tOld switch. Pinger behaves the same way the traditional ping \n\t\tIt displays every ping output to screen\n"+
                              "\t-p <n>:\tPolling period. Every 'n' seconds\n" +
                              "\t-t <n>:\tTimeout value. The script waits for 'n' seconds before calling it a ping timeout.\n" +
                              "\t-v: \tVerbose output\n" +
+                             "\t-h: \tSpecify to run the script for the next 'n' hours - Specify a positive value\n" +
+                             "\t-q: \tTurn of the  Beeps \n" +
+                             "\t-csv: \tOutput onscreen ping responses to CSV\n" +
+                             "\t-csvall: \tOutput ALL ping responses to CSV even if you are using the smart ping. Onscreen will display changes only but on file it will log everything\n" +
                              "\nReturn Codes:" + "\n" +
                              "\t0\tSuccessfull Ping" + "\n" +
                              "\t1\tUnsuccessfull or other errors reported" + "\n" +
