@@ -70,7 +70,7 @@ namespace Pinger
             this.pingStatusPrevious = "-";
             this.errorMsg = "-";
             this.optionsTtl = "-";
-            this.errorCode = 0; // No Errors
+            this.errorCode = -1; // No Errors
             this.hostUnreachableCount = 0;
             this.hostReachableCount = 0;
             this.hostPingCount = 0;
@@ -353,21 +353,20 @@ namespace Pinger
 
                 do
                 {
-                    pt.DateLatestStatus = DateTime.Now;
-                    //VERBOSE for DEBUG
-                    if (verbose) { pt.Printout(); }
-                    //VERBOSE for DEBUG
+                    pt.DateLatestStatus = DateTime.Now;                    
                     try
                     {
                         options.DontFragment = true;
                         PingReply reply;
-                        pt.HostPingCount++;
+                        
                         if (pt.IPAddress != null)
                         {
-                            reply = pingSender.Send(pt.IPAddress, timeout, buffer, options);                            
+                            reply = pingSender.Send(pt.IPAddress, timeout, buffer, options);
+                            pt.HostPingCount++;
                         } else
                         {
                             reply = pingSender.Send(pt.Hostname, timeout, buffer, options);
+                            pt.HostPingCount++;
                         }
 
                         if (reply != null && reply.Options != null)
@@ -389,9 +388,7 @@ namespace Pinger
                         } else {
                             pt.Errorcode = 0;
                         }
-                        
-                        if (loop)
-                            Thread.Sleep(sleeptime);
+                                                
                     }
                     catch (System.Net.Sockets.SocketException se)
                     {
@@ -419,6 +416,7 @@ namespace Pinger
                         {
                             Console.WriteLine("Unknown ping error code");
                         }
+
                         if (String.Equals(pt.PreviousPingStatus, pt.PingStatus) && smartping)
                         {
                             // don't print out anything because the previous status is the same as the current. 
@@ -457,7 +455,12 @@ namespace Pinger
 
                         }
                     }
-                //} while (loop || loopcount <= maxloopcount);
+                    //VERBOSE for DEBUG
+                    if (verbose) { pt.Printout(); }
+                    //VERBOSE for DEBUG
+                    if (loop)
+                        Thread.Sleep(sleeptime);
+                    //} while (loop || loopcount <= maxloopcount);
                 } while (loop );
 
                // Set return codes

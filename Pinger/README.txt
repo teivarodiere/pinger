@@ -7,6 +7,9 @@ Not the same as ping in the following way:
 - Without any switches pinger polls and displays the response each time the current response differs from the previous.
 - The output displays various columns which can be imported into excel or calc via a CSV format (Comma delimited)
 - You can control the ping intervals
+- Vaibale audible alarm to alert of change
+	2 Beeps when ping status changes to SUCCESS
+	4 Beeps when ping status changes from SUCCESS to another
 - You can use the verbose switch '-v' to displays the following extra properties for each ping
 - It performs a DNS resolution before the ping starts
 	 ++++++++++++++++++++++++++++++++++++++++++++
@@ -61,17 +64,23 @@ Actions on Failure (To be implemented):
 #########################################################
 # PING device (The default behaviour)
 #########################################################
-C:\>pinger.exe google.com.au
-Pinging google.com.au at 1sec interval & timeout of 1 seconds
+C:\>pinger 192.168.10.76
+Pinging 192.168.10.76 at 1sec interval & timeout of 1 seconds
 Looking up DNS :
-      Hostname : google.com.au
-      IPAddress: 216.58.203.99
+      Hostname : 192.168.10.76
+      IPAddress: 192.168.10.76
 
 poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
 
-16-Oct-17 11:04:54 AM,google.com.au,Success,12ms,56,1
-16-Oct-17 11:13:40 AM,google.com.au,HostUnreachable,12ms,56,547
-16-Oct-17 11:13:53 AM,google.com.au,Success,12ms,56,660
+16-Oct-17 11:22:02 AM,192.168.10.76,Success,36ms,64,1
+16-Oct-17 11:22:15 AM,192.168.10.76,DestinationHostUnreachable,267ms,-,13		<- 4 Beeps will alert of this change of status
+16-Oct-17 11:22:30 AM,192.168.10.76,Success,50ms,64,18							<- 2 Beeps will alert of this change of status 
+16-Oct-17 11:22:31 AM,192.168.10.76,DestinationHostUnreachable,50ms,-,19
+16-Oct-17 11:22:35 AM,192.168.10.76,Success,329ms,64,20
+16-Oct-17 11:22:37 AM,192.168.10.76,DestinationHostUnreachable,329ms,-,21
+16-Oct-17 11:22:40 AM,192.168.10.76,Success,142ms,64,22
+16-Oct-17 11:22:42 AM,192.168.10.76,DestinationHostUnreachable,142ms,-,23
+16-Oct-17 11:22:45 AM,192.168.10.76,Success,176ms,64,24
 
 #########################################################
 # PING device ONCE
