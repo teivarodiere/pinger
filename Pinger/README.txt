@@ -1,12 +1,145 @@
-﻿
-Examples: 
+﻿# This is an alternative to the traditional PING alternative. Here is a quick comparision: 
 
-C:\pinger.exe <dns or ip>
+Same as ping in the following way:
+- It pings and displays every responses/results when you use the pinger '-s' switch
 
-# smart ping dns or ip every 5 seconds and verbose each line
-C:\pinger -s <dns or ip> -t 5
+Not the same as ping in the following way:
+- Without any switches pinger polls and displays the response each time the current response differs from the previous.
+- The output displays various columns which can be imported into excel or calc via a CSV format (Comma delimited)
+- You can control the ping intervals
+- You can use the verbose switch '-v' to displays the following extra properties for each ping
+- It performs a DNS resolution before the ping starts
+	 ++++++++++++++++++++++++++++++++++++++++++++
+	 VERBOSE:
+		 hostPingCount = 660
+		 hostNameOrAddress = google.com.au
+		 dnsName = google.com.au
+		 dnsipaddr = 216.58.203.99
+		 dnsReplyIPaddr = 216.58.203.99
+		 dnsLookupStatus = Success
+		 pingStatus = Success
+		 pingStatusPrevious = Unreachable
+		 pingReplyRoundTripInMiliSec = 12
+		 errorMsg = -
+		 errorCode = 0
+		 hostUnreachableCount = 13
+		 hostReachableCount = 647
+		 startDate = 16-Oct-17 10:56:45 AM
+		 endDate = 01-Jan-01 12:00:00 AM
+		 dateLatestStatus = 16-Oct-17 10:56:55 AM
+		 dateLatestStatusPrevious = 16-Oct-17 10:56:45 AM
+	++++++++++++++++++++++++++++++++++++++++++++
 
 
+Command examples: 
+#########################################################
+# PING without anything shows the syntax
+#########################################################
+
+C:\>pinger.exe
+
+Pinger is a custom ping utility written by Teiva Rodiere
+Syntax  : Pinger.exe <host> [OPTIONS]
+[OPTIONS]:
+        -n:     No loop. Stops pinger after one attempt
+        -r:     Return Code only. Pinger does not output anything to screen.
+        -s:     Old switch. Pinger behaves the same way the traditional ping
+                It displays every ping output to screen
+        -p <n>: Polling period. Every 'n' seconds
+        -t <n>: Timeout value. The script waits for 'n' seconds before calling it a ping timeout.
+        -v:     Verbose output
+
+Return Codes:
+        0       Successfull Ping
+        1       Unsuccessfull or other errors reported
+
+Actions on Failure (To be implemented):
+        -traceroute     Perform a traceroute on failure
+        -webcheck <fullURL>:    Perform a url check on failure
+
+
+#########################################################
+# PING device (The default behaviour)
+#########################################################
+C:\>pinger.exe google.com.au
+Pinging google.com.au at 1sec interval & timeout of 1 seconds
+Looking up DNS :
+      Hostname : google.com.au
+      IPAddress: 216.58.203.99
+
+poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
+
+16-Oct-17 11:04:54 AM,google.com.au,Success,12ms,56,1
+16-Oct-17 11:13:40 AM,google.com.au,HostUnreachable,12ms,56,547
+16-Oct-17 11:13:53 AM,google.com.au,Success,12ms,56,660
+
+#########################################################
+# PING device ONCE
+#########################################################
+C:\>pinger google.com.au -n
+Pinging google.com.au at 1sec interval & timeout of 1 seconds
+Looking up DNS :
+      Hostname : google.com.au
+      IPAddress: 216.58.203.99
+
+poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
+
+16-Oct-17 11:07:56 AM,google.com.au,Success,12ms,56,1
+
+#########################################################
+# PING device every 10 seconds and verbose the output
+#########################################################
+C:\Users\trodiere\Google Drive\Devshed\Pinger\Pinger\bin\Release>pinger google.com.au -p 10 -v
+Pinging google.com.au at 10sec interval & timeout of 1 seconds
+Looking up DNS :
+      Hostname : google.com.au
+      IPAddress: 216.58.203.99
+
+poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
+
+++++++++++++++++++++++++++++++++++++++++++++
+VERBOSE:
+     hostPingCount = 1
+     hostNameOrAddress = google.com.au
+     dnsName = google.com.au
+     dnsipaddr = 216.58.203.99
+     dnsReplyIPaddr = -
+     dnsLookupStatus = Success
+     pingStatus = -
+     pingStatusPrevious = -
+     pingReplyRoundTripInMiliSec = 0
+     errorMsg = -
+     errorCode = 0
+     hostUnreachableCount = 0
+     hostReachableCount = 0
+     startDate = 16-Oct-17 11:09:29 AM
+     endDate = 01-Jan-01 12:00:00 AM
+     dateLatestStatus = 16-Oct-17 11:09:29 AM
+     dateLatestStatusPrevious = 01-Jan-01 12:00:00 AM
+poltime=16-Oct-17 11:09:29 AM,trgt=google.com.au,status=Success,rndtrip=12ms,ttl=56,pcount1
+++++++++++++++++++++++++++++++++++++++++++++
+VERBOSE:
+     hostPingCount = 2
+     hostNameOrAddress = google.com.au
+     dnsName = google.com.au
+     dnsipaddr = 216.58.203.99
+     dnsReplyIPaddr = 216.58.203.99
+     dnsLookupStatus = Success
+     pingStatus = Success
+     pingStatusPrevious = -
+     pingReplyRoundTripInMiliSec = 12
+     errorMsg = -
+     errorCode = 0
+     hostUnreachableCount = 0
+     hostReachableCount = 1
+     startDate = 16-Oct-17 11:09:29 AM
+     endDate = 01-Jan-01 12:00:00 AM
+     dateLatestStatus = 16-Oct-17 11:09:39 AM
+     dateLatestStatusPrevious = 16-Oct-17 11:09:29 AM
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 [Feature not yet implemented]
 
 # to perform a traceroute 
@@ -91,3 +224,4 @@ TTL Values reply by OS
                 Windows     Server 2008     ICMP / TCP / UDP    128
                 Windows     10  ICMP / TCP / UDP    128
                 */
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

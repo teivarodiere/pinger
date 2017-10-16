@@ -205,7 +205,7 @@ namespace Pinger
             bool verbose = false; // true = print additional versbose stuff for the program
             bool loop = true; // true = ping will loop until Ctrl + C is pressed
             int items = -1; // compensate for "pinger" counting as 1 command line argument
-            bool smartping = false;
+            bool smartping = true; // by default use the smart ping switch
             bool return_code_only = false;
             string target = ""; // target IP address or DNS name to ping
             int defaultPollingTimeInMilliseconds = 1000; //iteration defaultPollingTimeInMilliseconds in ms or can be seen as polling
@@ -234,7 +234,7 @@ namespace Pinger
                         break;
                     case "-S": // smart switch
                         // Show OK and Down and OK, implies -C
-                        smartping = true;
+                        smartping = false;
                         loop = true;
                         break;
                     case "-N":
@@ -340,16 +340,17 @@ namespace Pinger
                 {
                     pt.Hostname = pt.Target;
                 }
-                //}
-                //
-                //Console.WriteLine("Pinging {0} at {1} sec interval & timeout of {2} seconds", target, sleeptime/1000, timeout/1000);
-                logThis("Pinging " + pt.Target +" at "+sleeptime / 1000 +"sec interval & timeout of " + timeout / 1000 +" seconds");
-                logThis("Looking up DNS : ");
-                logThis("      Hostname : " + pt.Hostname);
-                logThis("      IPAddress: " + pt.IPAddress);
-                //logThis("      Lookup Status: " + pt.DNSLookupStatus);
-                logThis("");
-                logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                if (!return_code_only)
+                {
+                    logThis("Pinging " + pt.Target + " at " + sleeptime / 1000 + "sec interval & timeout of " + timeout / 1000 + " seconds");
+                    logThis("Looking up DNS : ");
+                    logThis("      Hostname : " + pt.Hostname);
+                    logThis("      IPAddress: " + pt.IPAddress);
+                    //logThis("      Lookup Status: " + pt.DNSLookupStatus);
+                    logThis("");
+                    logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                }
+
                 do
                 {
                     pt.DateLatestStatus = DateTime.Now;
@@ -521,11 +522,12 @@ namespace Pinger
             logThis("Syntax  : Pinger.exe <host> [OPTIONS]");
 
             // Display Return Codes Information
+            //"\t-s:\tSmart switch. Pinger only shows pinger response \n\t\tif the current ping status is different to the last one \n"+
             logThis("[OPTIONS]: \n"+
                              "\t-n:\tNo loop. Stops pinger after one attempt \n"+
                              "\t-r:\tReturn Code only. Pinger does not output anything to screen.\n"+
-                             "\t-s:\tSmart switch. Pinger only shows pinger response \n\t\tif the current ping status is different to the last one \n"+
-                             "\t-p <n>:\tPolling period. Every 'n' seconds\n"+
+                             "\t-s:\tOld switch. Pinger behaves the same way the traditional ping \n\t\tIt displays every ping output to screen\n"+
+                             "\t-p <n>:\tPolling period. Every 'n' seconds\n" +
                              "\t-t <n>:\tTimeout value. The script waits for 'n' seconds before calling it a ping timeout.\n" +
                              "\t-v: \tVerbose output\n" +
                              "\nReturn Codes:" + "\n" +
