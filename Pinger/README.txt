@@ -2,10 +2,10 @@
 
 Here is a quick comparision: 
 
-Same as ping in the following way:
+Same as ping in the following ways:
 - It pings and displays every responses/results when you use the pinger '-s' switch
 
-Not the same as ping in the following way:
+Not the same as ping in the following ways:
 - It doesn't summaries the results after pressing Ctrl+C yet
 - Without any switches pinger polls and displays the response each time the current response differs from the previous.
 - The output displays various columns which can be imported into excel or calc via a CSV format (Comma delimited)
