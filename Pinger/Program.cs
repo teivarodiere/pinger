@@ -33,7 +33,7 @@ namespace Pinger
         private string errorMsg;
         private int hostPingCount;
         private int errorCode;
-        private string optionsTtl;
+        private int optionsTtl;
         private int hostUnreachableCount;
         private int hostReachableCount;
         private DateTime startDate;
@@ -52,7 +52,7 @@ namespace Pinger
             this.pingStatus = "-";
             this.pingStatusPrevious = "-";
             this.errorMsg = "-";
-            this.optionsTtl = "-";
+            this.optionsTtl = -1;
             this.errorCode = -1; // No Errors
             this.hostUnreachableCount = 0;
             this.hostReachableCount = 0;
@@ -70,7 +70,7 @@ namespace Pinger
             this.pingStatus = "-";
             this.pingStatusPrevious = "-";
             this.errorMsg = "-";
-            this.optionsTtl = "-";
+            this.optionsTtl = -1;
             this.errorCode = -1; // No Errors
             this.hostUnreachableCount = 0;
             this.hostReachableCount = 0;
@@ -142,7 +142,7 @@ namespace Pinger
             get { return hostPingCount; }
             set { hostPingCount = value; }
         }
-        public string OptionsTtl
+        public int OptionsTtl
         {
             get { return optionsTtl; }
             set { optionsTtl = value; }
@@ -184,6 +184,7 @@ namespace Pinger
             Console.WriteLine("     pingStatus = " + pingStatus);
             Console.WriteLine("     pingStatusPrevious = " + pingStatusPrevious);
             Console.WriteLine("     pingReplyRoundTripInMiliSec = " + pingReplyRoundTripInMiliSec);
+            Console.WriteLine("     optionsTtl = " + optionsTtl);
             Console.WriteLine("     errorMsg = " + errorMsg);
             Console.WriteLine("     errorCode = " + errorCode);            
             Console.WriteLine("     hostUnreachableCount = " + hostUnreachableCount);
@@ -204,15 +205,15 @@ namespace Pinger
             // Create  the ping target object, aka pt
             PingerTarget pt = new PingerTarget();
             bool verbose = false; // true = print additional versbose stuff for the program
-            bool loop = true; // true = ping will loop until Ctrl + C is pressed
+            //bool loop = true; // true = ping will loop until Ctrl + C is pressed
             int items = -1; // compensate for "pinger" counting as 1 command line argument
-            int maxcount = 1;
+            int maxcount = 0;
             bool maxCountSpecified = false;
             bool smartping = true; // by default use the smart ping switch
             bool return_code_only = false;
             string target = ""; // target IP address or DNS name to ping
             int defaultPollingTimeInMilliseconds = 1000; //iteration defaultPollingTimeInMilliseconds in ms or can be seen as polling
-            bool stopBeeps = true;
+            bool stopBeeps = false;
             bool outputScreenToCSV = false; // Output only what's on the screen to CSV. So if printing only changes then it will only output to file that
             bool outputAllToCSV = false; // Output every ping response to CSV, even if you are using the smart ping function which only prints the status changes
             string outputCSVFilename="";
@@ -238,24 +239,26 @@ namespace Pinger
                         ShowSyntax();
                         runtimeError = 1;
                         break;
+                    case "-R": // Returns code only, doesn't expects a value after this switch
+                        return_code_only = true;
+                        maxcount = 1;
+                        maxCountSpecified = true;
+                        break;
                     case "-V":
                         verbose = true;
                         break;
-                    case "-S": // smart switch
-                        // Show OK and Down and OK, implies -C
+                    case "-S": // Make pinger like ping and output every responses to screen
                         smartping = false;
-                        loop = true;
                         break;
-                    case "-N":
-                        loop = false;
+                    case "-N": // No loop, same as using '-c 1'
                         maxcount = 1;
+                        maxCountSpecified = true;
+                        //loop = false;
                         break;
-                    case "-Q":
-                        //verbose = false;
+                    case "-Q": // quietens audible sounds (beeps)
                         stopBeeps = true;
                         break;
-                    case "-C":
-                        //verbose = false;
+                    case "-C": // Specify how many times pinger will loop ping a host, expects a positive value after the switch equal or greater than 1                        
                         try
                         {
                             argIndex++; // get the next value, hopefully a digit
@@ -284,13 +287,14 @@ namespace Pinger
                             runtimeError = 1;
                         }
                         break;
-                    case "-H":
+                    case "-H": // Run pinger for a number of hours, expects a positive value after the switch
                         try
                         {
                             argIndex++; // get the next value, hopefully a digit
                             //bool success = int.TryParse(arguments[argIndex], out sleeptime);
                             runtimeInHours = int.Parse(arguments[argIndex]);
                             maxCountSpecified = false;
+                            //loop = true;
                         }
                         catch (System.ArgumentNullException)
                         {
@@ -313,24 +317,18 @@ namespace Pinger
                             runtimeError = 1;
                         }
                         break;
-                    case "-CSV":
+                    case "-CSV": // Output each ping responses to a CSV file but matches onscreen output.
                         //verbose = false;
                         outputScreenToCSV = true;
-                        outputAllToCSV=false;
+                        outputAllToCSV=!outputScreenToCSV;
                         break;
-                    case "-CSVALL":
+                    case "-CSVALL": // Output each ping responses to a CSV file even if you are using the smartping function
                         //verbose = false;
                         outputScreenToCSV = false;
-                        outputAllToCSV = true;
+                        outputAllToCSV = !outputScreenToCSV;
                         break;
-                    case "-R":
-                        //verbose = false;
-                        smartping = false;
-                        loop = false;
-                        return_code_only = true;
-                        break;
-                    case "-P": // smart switch
-                        // Show OK and Down and OK, implies -C
+                   
+                    case "-P": // Poll every 'n' seconds, expects a value after this switch
                         try
                         {
                             argIndex++; // get the next value, hopefully a digit
@@ -387,7 +385,11 @@ namespace Pinger
                         }
                         break;
                     default:
-                        if (items == 0) target = arguments[argIndex];
+                        if (items == 0)
+                        {
+                            target = arguments[argIndex];
+                            //smartping = true;
+                        }
                         items++; 
                         break;
                 }
@@ -430,10 +432,10 @@ namespace Pinger
                     if (!maxCountSpecified && runtimeInHours > 0)
                     {
                         maxcount = (runtimeInHours * 60 * 60) / (sleeptime / 1000);
-                        //logThis(">> sleeptime = " + sleeptime / 1000 + ",runtimeInHours=" + runtimeInHours + "hrs,maxcount=" + maxcount +"<<");
+                        //logThis(">> sleeptime = " + sleeptime / 1000 + ",runtimeInHours=" + runtimeInHours + "hrs,maxcount=" + maxcount +"<<");                       
                         logThis(">> Runtime: " + runtimeInHours + "hrs, Total ping expected=" + maxcount + " <<");
                     }
-                }                
+                }
                 if (outputScreenToCSV || outputAllToCSV)
                 {
                     outputCSVFilename = "pinger-" + pt.Target.Replace('.', '_').Trim() + "_" + ".txt";
@@ -441,7 +443,10 @@ namespace Pinger
                     logThis("");
                     logToFile("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n", outputCSVFilename);
                 }
-                logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                if (!return_code_only)
+                {
+                    logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                }
                 do
                 {
                     pt.DateLatestStatus = DateTime.Now;                    
@@ -462,10 +467,10 @@ namespace Pinger
 
                         if (reply != null && reply.Options != null)
                         {
-                            pt.OptionsTtl = reply.Options.Ttl.ToString();
+                            pt.OptionsTtl = reply.Options.Ttl;
                         } else
                         {
-                            pt.OptionsTtl = "-";
+                            pt.OptionsTtl = -1;
                         }
 
                         pt.ReplyIPAddress = reply.Address.ToString(); // ? reply.Address.ToString() : "-";
@@ -515,47 +520,63 @@ namespace Pinger
                         }
                         else
                         {
-                            outstr = "poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",pcount" + pt.HostPingCount;
+                            outstr = "poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",count=" + pt.HostPingCount;
                         }
 
-                        if (String.Equals(pt.PreviousPingStatus, pt.PingStatus) && smartping)
+                        if (pt.PreviousPingStatus != pt.PingStatus)
                         {
-                            // don't print out anything because the previous status is the same as the current.       
-                            if(outputAllToCSV)
+                            // 1 print to screent the difference
+                            if (!return_code_only)
+                            {
+                                logThis(outstr);
+                            }
+
+                            // 2 - write to log file if requested to
+                            if (outputScreenToCSV || outputAllToCSV)
                             {
                                 logToFile(outstr, outputCSVFilename);
                             }
-                        }
-                        else
-                        {
-                            // START BEEPING ON STATUS CHANGE
-                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && smartping && !stopBeeps)
-                            {                                
+
+                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && !stopBeeps)
+                            {
                                 for (int i = 0; i < 2; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && smartping && !stopBeeps)
+                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && !stopBeeps) //&& smartping
                             {
                                 for (int i = 0; i < 4; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            // Print to screen
-                            
-                            if (outputScreenToCSV || outputAllToCSV)
+                        }
+                        else // At this point the current and previous ping status differ so we need to process
+                        {
+                            // Only output to screen if the smart ping is not enabled and pinger behaves like ping
+                            if (!smartping)
+                            {
+                                if (!return_code_only)
+                                {
+                                    logThis(outstr);
+                                }
+                            }
+                            // Only output to screen if the 
+                            if (outputAllToCSV)
                             {
                                 logToFile(outstr, outputCSVFilename);
-                            }
-                            logThis(outstr);
+                            }                            
                         } 
                     }
+                    if (!maxCountSpecified) { maxcount = pt.HostPingCount + 1; }
                     if (verbose) { pt.Printout(); }
-                    if (loop) { Thread.Sleep(sleeptime); }
-                } while (loop && pt.HostPingCount < maxcount);
+                    //if (loop) { Thread.Sleep(sleeptime); }
+                    if (pt.HostPingCount < maxcount) { Thread.Sleep(sleeptime); }
+                } while (pt.HostPingCount < maxcount);
+                //while (loop && pt.HostPingCount < maxcount) ;
             }
+            //logThis(pt.Errorcode.ToString());
             return pt.Errorcode;
         }
 
@@ -617,17 +638,17 @@ namespace Pinger
             // Display Return Codes Information
             //"\t-s:\tSmart switch. Pinger only shows pinger response \n\t\tif the current ping status is different to the last one \n"+
             logThis("[OPTIONS]: \n"+
-                             "\t-n:\tNo loop. Stops pinger after one attempt \n"+
-                             "\t-c:\tQuit after 'n' number of poll\n" +
-                             "\t-r:\tReturn Code only. Pinger does not output anything to screen.\n" +
-                             "\t-s:\tOld switch. Pinger behaves the same way the traditional ping \n\t\tIt displays every ping output to screen\n"+
+                             "\t-n:\tNo loop. Pinger pings once then exists\n"+
+                             "\t-h <n>: Run pinger for the next 'n' number of hours - Specify a positive value for 'n'\n" +
+                             "\t-c <n>: Specify how many times pinger will ping the host before existing - Specify a positive value 'n' \n" +
+                             "\t-r:\tReturn Code only. Pinger does not output anything to screen and returns a 0 error code for success or 1 for failure.\n" +
+                             "\t-s:\tMakes pinger behave like the normal ping by displaying every ping responses to screen\n"+
                              "\t-p <n>:\tPolling period. Every 'n' seconds\n" +
                              "\t-t <n>:\tTimeout value. The script waits for 'n' seconds before calling it a ping timeout.\n" +
                              "\t-v: \tVerbose output\n" +
-                             "\t-h: \tSpecify to run the script for the next 'n' hours - Specify a positive value\n" +
-                             "\t-q: \tTurn of the  Beeps \n" +
+                             "\t-q: \tMute audible alarms (2 beeps for successful ping and 4 beeps for unsuccessful beeps) \n" +
                              "\t-csv: \tOutput onscreen ping responses to CSV\n" +
-                             "\t-csvall: \tOutput ALL ping responses to CSV even if you are using the smart ping. Onscreen will display changes only but on file it will log everything\n" +
+                             "\t-csvall:Output ALL ping responses to CSV even if you are using the smart ping. Onscreen will display changes only but on file it will log everything\n" +
                              "\nReturn Codes:" + "\n" +
                              "\t0\tSuccessfull Ping" + "\n" +
                              "\t1\tUnsuccessfull or other errors reported" + "\n" +
