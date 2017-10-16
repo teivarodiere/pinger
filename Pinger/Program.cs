@@ -24,38 +24,38 @@ namespace Pinger
         private string hostNameOrAddress;
         private string dnsName;
         private string dnsipaddr;
-        private string replyDnsipaddr;
-        private long replyRoundTrip;
+        private string dnsReplyIPaddr;
+        private long pingReplyRoundTripInMiliSec;
         private string dnsLookupStatus;
-        private string status;
-        private string statusPrevious;        
+        private string pingStatus;
+        private string pingStatusPrevious;        
         private string errorMsg;
-        private int pingCount;
+        private int hostPingCount;
         private int errorCode;
         private string optionsTtl;
-        private int offlineCount;
-        private int onlineCount;
+        private int hostUnreachableCount;
+        private int hostReachableCount;
         private DateTime startDate;
         private DateTime endDate;
-        private DateTime statusDate;
-        private DateTime statusDatePrevious;
+        private DateTime dateLatestStatus;
+        private DateTime dateLatestStatusPrevious;
 
         public PingerTarget(string targetName)
         {
             this.hostNameOrAddress = targetName;
             this.dnsName = "-";
             this.dnsipaddr = "-";
-            this.replyDnsipaddr = "-";
-            this.replyRoundTrip = 0;
+            this.dnsReplyIPaddr = "-";
+            this.pingReplyRoundTripInMiliSec = -1;
             this.dnsLookupStatus = "-";
-            this.status = "-";
-            this.statusPrevious = "-";
+            this.pingStatus = "-";
+            this.pingStatusPrevious = "-";
             this.errorMsg = "-";
             this.optionsTtl = "-";
-            this.errorCode = 0; // No Errors
-            this.offlineCount = 0;
-            this.onlineCount = 0;
-            this.pingCount = 0;
+            this.errorCode = -1; // No Errors
+            this.hostUnreachableCount = 0;
+            this.hostReachableCount = 0;
+            this.hostPingCount = 0;
         }
 
         public PingerTarget()
@@ -63,17 +63,17 @@ namespace Pinger
             this.hostNameOrAddress = "-";
             this.dnsName = "-";
             this.dnsipaddr = "-";
-            this.replyDnsipaddr = "-";
-            this.replyRoundTrip = 0;
+            this.dnsReplyIPaddr = "-";
+            this.pingReplyRoundTripInMiliSec = 0;
             this.dnsLookupStatus = "-";
-            this.status = "-";
-            this.statusPrevious = "-";
+            this.pingStatus = "-";
+            this.pingStatusPrevious = "-";
             this.errorMsg = "-";
             this.optionsTtl = "-";
             this.errorCode = 0; // No Errors
-            this.offlineCount = 0;
-            this.onlineCount = 0;
-            this.pingCount = 0;
+            this.hostUnreachableCount = 0;
+            this.hostReachableCount = 0;
+            this.hostPingCount = 0;
         }
         
         public string Target
@@ -98,58 +98,48 @@ namespace Pinger
         }
         public string ReplyIPAddress
         {
-            get { return replyDnsipaddr; }
-            set { replyDnsipaddr = value; }
+            get { return dnsReplyIPaddr; }
+            set { dnsReplyIPaddr = value; }
         }
         
-        public string Status
+        public string PingStatus
         {
-            get { return status; }
+            get { return pingStatus; }
             set {
-                statusPrevious = status;
-                status = value;              
+                pingStatusPrevious = pingStatus;
+                pingStatus = value;              
             }
         }
-        public int OnlineCount
+        public int HostReachableCountUpdate
         {
-            get { return onlineCount;  }
-            set { onlineCount = value; }
+            get { return hostReachableCount;  }
+            set { hostReachableCount = value; }
         }
-        public int OfflineCount
+        public int HostUnreachableCountUpdate
         {
-            get { return offlineCount; }
-            set { offlineCount = value; }
+            get { return hostUnreachableCount; }
+            set { hostUnreachableCount = value; }
         }
 
-        public string PreviousStatus
+        public string PreviousPingStatus
         {
-            get { return statusPrevious; }
+            get { return pingStatusPrevious; }
         }
         public int Errorcode
         {
             get { return errorCode; }
-            set {
-                errorCode = value;
-                if(errorCode == 0)
-                {
-                    onlineCount++;
-                } else if (errorCode == 1)
-                {
-                    offlineCount++;
-                }
-            }
+            set { errorCode = value; }
         }
-
         public string ErrorMsg
         {
             get { return errorMsg; }
             set { errorMsg = value; }
         }
 
-        public int PingCount
+        public int HostPingCount
         {
-            get { return pingCount; }
-            set { pingCount = value; }
+            get { return hostPingCount; }
+            set { hostPingCount = value; }
         }
         public string OptionsTtl
         {
@@ -167,40 +157,40 @@ namespace Pinger
             set { endDate = DateTime.Now; }
         }
 
-        public DateTime StatusDate
+        public DateTime DateLatestStatus
         {
-            get { return statusDate; }
+            get { return dateLatestStatus; }
             set {
-                statusDatePrevious = statusDate;
-                statusDate = DateTime.Now;
+                dateLatestStatusPrevious = dateLatestStatus;
+                dateLatestStatus = DateTime.Now;
             }
         }        
         public long RoundTrip
         {
-            get { return replyRoundTrip; }
-            set { replyRoundTrip = value; }
+            get { return pingReplyRoundTripInMiliSec; }
+            set { pingReplyRoundTripInMiliSec = value; }
         }
         public void Printout()
         {
             Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
             Console.WriteLine("VERBOSE:");
-            Console.WriteLine("     pingCount = " + pingCount);
+            Console.WriteLine("     hostPingCount = " + this.hostPingCount);
             Console.WriteLine("     hostNameOrAddress = " + hostNameOrAddress);
             Console.WriteLine("     dnsName = " + dnsName);
             Console.WriteLine("     dnsipaddr = " + dnsipaddr);
-            Console.WriteLine("     replyDnsipaddr = " + replyDnsipaddr);
+            Console.WriteLine("     dnsReplyIPaddr = " + dnsReplyIPaddr);
             Console.WriteLine("     dnsLookupStatus = " + dnsLookupStatus);
-            Console.WriteLine("     status = " + status);
-            Console.WriteLine("     statusPrevious = " + statusPrevious);
+            Console.WriteLine("     pingStatus = " + pingStatus);
+            Console.WriteLine("     pingStatusPrevious = " + pingStatusPrevious);
+            Console.WriteLine("     pingReplyRoundTripInMiliSec = " + pingReplyRoundTripInMiliSec);
             Console.WriteLine("     errorMsg = " + errorMsg);
-            Console.WriteLine("     errorCode = " + errorCode);
-            Console.WriteLine("     replyRoundTrip = " + replyRoundTrip);
-            Console.WriteLine("     offlineCount = " + offlineCount);
-            Console.WriteLine("     onlineCount = " + onlineCount);
+            Console.WriteLine("     errorCode = " + errorCode);            
+            Console.WriteLine("     hostUnreachableCount = " + hostUnreachableCount);
+            Console.WriteLine("     hostReachableCount = " + hostReachableCount);
             Console.WriteLine("     startDate = " + startDate);
             Console.WriteLine("     endDate = " + endDate);
-            Console.WriteLine("     statusDate = " + statusDate);
-            Console.WriteLine("     statusDatePrevious = " + statusDatePrevious);
+            Console.WriteLine("     dateLatestStatus = " + dateLatestStatus);
+            Console.WriteLine("     dateLatestStatusPrevious = " + dateLatestStatusPrevious);
         }
     }
 
@@ -354,28 +344,26 @@ namespace Pinger
                 //
                 //Console.WriteLine("Pinging {0} at {1} sec interval & timeout of {2} seconds", target, sleeptime/1000, timeout/1000);
                 logThis("Pinging " + pt.Target +" at "+sleeptime / 1000 +"sec interval & timeout of " + timeout / 1000 +" seconds");
-                logThis("DNS Lookup : ");
+                logThis("Looking up DNS : ");
                 logThis("      Hostname : " + pt.Hostname);
                 logThis("      IPAddress: " + pt.IPAddress);
                 //logThis("      Lookup Status: " + pt.DNSLookupStatus);
                 logThis("");
                 logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
-                
-                pt.PingCount = 1;
                 do
                 {
-                    pt.StatusDate = DateTime.Now;
+                    pt.DateLatestStatus = DateTime.Now;
                     //VERBOSE for DEBUG
                     if (verbose) { pt.Printout(); }
                     //VERBOSE for DEBUG
-
                     try
                     {
                         options.DontFragment = true;
                         PingReply reply;
+                        pt.HostPingCount++;
                         if (pt.IPAddress != null)
                         {
-                            reply = pingSender.Send(pt.IPAddress, timeout, buffer, options);
+                            reply = pingSender.Send(pt.IPAddress, timeout, buffer, options);                            
                         } else
                         {
                             reply = pingSender.Send(pt.Hostname, timeout, buffer, options);
@@ -391,64 +379,60 @@ namespace Pinger
 
                         pt.ReplyIPAddress = reply.Address.ToString(); // ? reply.Address.ToString() : "-";
                         pt.RoundTrip = reply.RoundtripTime; //? reply.RoundtripTime : -1);
-                        pt.Status = reply.Status.ToString(); //? reply.Status.ToString() : "-");
+                        pt.PingStatus = reply.Status.ToString(); //? reply.Status.ToString() : "-");
                                                              // logThis(reply.Status.ToString());
                         if (reply.Status.ToString() == "DestinationHostUnreachable")
                         {
                             pt.Errorcode = 1;
-                            pt.Status = "DestinationHostUnreachable";
+                            pt.PingStatus = "DestinationHostUnreachable";
+                        } else {
+                            pt.Errorcode = 0;
                         }
-
-
-                        // Console.WriteLine("pt-ErrorCode = " + pt.Errorcode);
-                        //pt.Status = (reply != null ?  : "Access Denied");
-                        //status_curr = reply.Status.ToString();
-
-                        //logThis("Previous status=" + pt.PreviousStatus + "  pt.Status=" + pt.Status);
-
+                        
                         if (loop)
                             Thread.Sleep(sleeptime);
                     }
                     catch (System.Net.Sockets.SocketException se)
                     {
-                        pt.Errorcode = 1;
-                        pt.ErrorMsg = se.Message;
-                        pt.Status = se.Message;
-                        Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = se.Message; pt.PingStatus = se.Message; Thread.Sleep(sleeptime);
                     }
                     catch (System.Net.NetworkInformation.PingException pe)
                     {
-                        pt.Errorcode = 1;
-                        pt.ErrorMsg = pe.Message;
-                        pt.Status = pe.Message;
-                        Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = pe.Message; pt.PingStatus = pe.Message; Thread.Sleep(sleeptime);
                     }
                     catch (System.NullReferenceException nre)
                     {
-                        pt.Errorcode = 1;
-                        pt.ErrorMsg = nre.Message;
-                        // pt.Status = nre.Message;
-                        pt.Status = "DestinationHostUnreachable";
-                        Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.PingStatus = "DestinationHostUnreachable"; Thread.Sleep(sleeptime);
+                        //pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.PingStatus = nre.Message; Thread.Sleep(sleeptime);
                     }
                     finally
                     {
-                        if (String.Equals(pt.PreviousStatus, pt.Status) && smartping)
+                        if (pt.Errorcode == 0)
+                        {
+                            pt.HostReachableCountUpdate++;
+                        }
+                        else if (pt.Errorcode == 1)
+                        {
+                            pt.HostUnreachableCountUpdate++;
+                        } else
+                        {
+                            Console.WriteLine("Unknown ping error code");
+                        }
+                        if (String.Equals(pt.PreviousPingStatus, pt.PingStatus) && smartping)
                         {
                             // don't print out anything because the previous status is the same as the current. 
                         }
                         else
                         {
                             // Console.WriteLine("In HERE");
-                            if (pt.Errorcode == 0)
-                            {
-
+                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && smartping)
+                            {                                
                                 for (int i = 0; i < 2; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            else if (pt.Errorcode == 1)
+                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && smartping)
                             {
                                 for (int i = 0; i < 4; i++)
                                 {
@@ -457,22 +441,21 @@ namespace Pinger
                             }
                             if (!return_code_only && !verbose)
                             {
-                                //Console.WriteLine("{0},{1}({2}),{3},{4}ms,{5},{6}", pt.StatusDate, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.PingCount);
-                                Console.WriteLine(pt.StatusDate +","+ pt.Hostname + "," + pt.Status + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.PingCount);
+                                //Console.WriteLine("{0},{1}({2}),{3},{4}ms,{5},{6}", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
+                                Console.WriteLine(pt.DateLatestStatus +","+ pt.Hostname + "," + pt.PingStatus + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.HostPingCount);
                             }
                             else if (!return_code_only && verbose)
                             {
                                 // for situations where you want the column headers inline with the results
-                                //Console.WriteLine("poltime={0},trgt={1}(ifAdrr={2}),status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.StatusDate, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.PingCount);
-                                //Console.WriteLine("poltime={0},trgt={1},status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.StatusDate, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.PingCount);
-                                Console.WriteLine("poltime=" + pt.StatusDate + ",trgt=" + pt.Hostname + ",status=" + pt.Status + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",pcount" + pt.PingCount);
+                                //Console.WriteLine("poltime={0},trgt={1}(ifAdrr={2}),status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
+                                //Console.WriteLine("poltime={0},trgt={1},status={3},rndtrip={4}ms,ttl={5},pcount={6}\n", pt.dateLatestStatus, pt.Hostname, (pt.ReplyIPAddress == null ? "(unknown IP)" : pt.ReplyIPAddress), pt.Status, pt.RoundTrip, pt.OptionsTtl, pt.hostPingCount);
+                                Console.WriteLine("poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",pcount" + pt.HostPingCount);
                             }
                             else
                                 Console.Write("\n");
 
                         }
                     }
-                    pt.PingCount = pt.PingCount+1;
                 //} while (loop || loopcount <= maxloopcount);
                 } while (loop );
 
