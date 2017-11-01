@@ -28,18 +28,21 @@ namespace Pinger
         private string dnsReplyIPaddr;
         private long pingReplyRoundTripInMiliSec;
         private string dnsLookupStatus;
-        private string pingStatus;
-        private string pingStatusPrevious;        
-        private string errorMsg;
-        private int hostPingCount;
+        private string errorMsg;              
         private int errorCode;
         private int optionsTtl;
         private int hostUnreachableCount;
         private int hostReachableCount;
         private DateTime startDate;
         private DateTime endDate;
-        private DateTime dateLatestStatus;
-        private DateTime dateLatestStatusPrevious;
+
+        private string currHostPingStatus;
+        private int currHostPingCount;
+        private DateTime currStatusPingDate;
+
+        private string prevHostPingStatus;
+        private DateTime prevStatusPingDate;
+        private int prevStatusPingCount;
 
         public PingerTarget(string targetName)
         {
@@ -49,14 +52,17 @@ namespace Pinger
             this.dnsReplyIPaddr = "-";
             this.pingReplyRoundTripInMiliSec = -1;
             this.dnsLookupStatus = "-";
-            this.pingStatus = "-";
-            this.pingStatusPrevious = "-";
+            this.currHostPingStatus = "-";
+            this.prevHostPingStatus = "-";
             this.errorMsg = "-";
             this.optionsTtl = -1;
             this.errorCode = -1; // No Errors
             this.hostUnreachableCount = 0;
             this.hostReachableCount = 0;
-            this.hostPingCount = 0;
+            this.currHostPingCount = 0;
+            this.prevStatusPingCount = 0;
+            this.currStatusPingDate = DateTime.Now;
+            this.prevStatusPingDate = DateTime.Now;
         }
 
         public PingerTarget()
@@ -67,14 +73,17 @@ namespace Pinger
             this.dnsReplyIPaddr = "-";
             this.pingReplyRoundTripInMiliSec = 0;
             this.dnsLookupStatus = "-";
-            this.pingStatus = "-";
-            this.pingStatusPrevious = "-";
+            this.currHostPingStatus = "-";
+            this.prevHostPingStatus = "-";
             this.errorMsg = "-";
             this.optionsTtl = -1;
             this.errorCode = -1; // No Errors
             this.hostUnreachableCount = 0;
             this.hostReachableCount = 0;
-            this.hostPingCount = 0;
+            this.currHostPingCount = 0;
+            this.prevStatusPingCount = 0;
+            this.currStatusPingDate = DateTime.Now;
+            this.prevStatusPingDate = DateTime.Now;
         }
         
         public string Target
@@ -103,12 +112,12 @@ namespace Pinger
             set { dnsReplyIPaddr = value; }
         }
         
-        public string PingStatus
+        public string CurrHostPingStatus
         {
-            get { return pingStatus; }
+            get { return currHostPingStatus; }
             set {
-                pingStatusPrevious = pingStatus;
-                pingStatus = value;              
+                prevHostPingStatus = currHostPingStatus;
+                currHostPingStatus = value;              
             }
         }
         public int HostReachableCountUpdate
@@ -122,9 +131,9 @@ namespace Pinger
             set { hostUnreachableCount = value; }
         }
 
-        public string PreviousPingStatus
+        public string PrevHostPingStatus
         {
-            get { return pingStatusPrevious; }
+            get { return prevHostPingStatus; }
         }
         public int Errorcode
         {
@@ -137,10 +146,15 @@ namespace Pinger
             set { errorMsg = value; }
         }
 
-        public int HostPingCount
+        public int CurrHostPingCount
         {
-            get { return hostPingCount; }
-            set { hostPingCount = value; }
+            get { return currHostPingCount; }
+            set { currHostPingCount = value; }
+        }        
+        public int PrevStatusPingCount
+        {
+            get { return prevStatusPingCount; }
+            set { prevStatusPingCount = value; }
         }
         public int OptionsTtl
         {
@@ -158,14 +172,22 @@ namespace Pinger
             set { endDate = DateTime.Now; }
         }
 
-        public DateTime DateLatestStatus
+        public DateTime CurrStatusPingDate
         {
-            get { return dateLatestStatus; }
+            get { return currStatusPingDate; }
             set {
-                dateLatestStatusPrevious = dateLatestStatus;
-                dateLatestStatus = DateTime.Now;
+                currStatusPingDate = value;
             }
-        }        
+        }
+        public DateTime PrevStatusPingDate
+        {
+            get { return prevStatusPingDate; }
+            set
+            {                
+                prevStatusPingDate = value;
+            }
+        }
+
         public long RoundTrip
         {
             get { return pingReplyRoundTripInMiliSec; }
@@ -175,14 +197,17 @@ namespace Pinger
         {
             Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
             Console.WriteLine("VERBOSE:");
-            Console.WriteLine("     hostPingCount = " + this.hostPingCount);
+            Console.WriteLine("     currHostPingCount = " + currHostPingCount);
+            Console.WriteLine("     currHostPingStatus = " + currHostPingStatus);
+            Console.WriteLine("     currStatusPingDate = " + currStatusPingDate);
+            Console.WriteLine("     prevHostPingStatus = " + prevHostPingStatus);
+            Console.WriteLine("     PrevStatusPingCount = " + prevStatusPingCount);
+            Console.WriteLine("     prevStatusPingDate = " + prevStatusPingDate);
             Console.WriteLine("     hostNameOrAddress = " + hostNameOrAddress);
             Console.WriteLine("     dnsName = " + dnsName);
             Console.WriteLine("     dnsipaddr = " + dnsipaddr);
             Console.WriteLine("     dnsReplyIPaddr = " + dnsReplyIPaddr);
             Console.WriteLine("     dnsLookupStatus = " + dnsLookupStatus);
-            Console.WriteLine("     pingStatus = " + pingStatus);
-            Console.WriteLine("     pingStatusPrevious = " + pingStatusPrevious);
             Console.WriteLine("     pingReplyRoundTripInMiliSec = " + pingReplyRoundTripInMiliSec);
             Console.WriteLine("     optionsTtl = " + optionsTtl);
             Console.WriteLine("     errorMsg = " + errorMsg);
@@ -191,8 +216,6 @@ namespace Pinger
             Console.WriteLine("     hostReachableCount = " + hostReachableCount);
             Console.WriteLine("     startDate = " + startDate);
             Console.WriteLine("     endDate = " + endDate);
-            Console.WriteLine("     dateLatestStatus = " + dateLatestStatus);
-            Console.WriteLine("     dateLatestStatusPrevious = " + dateLatestStatusPrevious);
         }
     }
 
@@ -218,16 +241,20 @@ namespace Pinger
             bool outputAllToCSV = false; // Output every ping response to CSV, even if you are using the smart ping function which only prints the status changes
             string outputCSVFilename="";
             string outstr = "";
-            int sleeptime = defaultPollingTimeInMilliseconds;               
+            int sleeptime = defaultPollingTimeInMilliseconds;
+            int sleeptimesec = sleeptime / 1000;
+            double timelaps = 0;
             int runtimeError = 0;
             int runtimeInHours = 0;
+
             // Create a buffer of 32 bytes of data to be transmitted.
             string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             byte[] buffer = Encoding.ASCII.GetBytes(data);
             int timeout = 1000; // amount of time in ms to wait for the ping reply
-                // Use the default Ttl value which is 128,
-                // but change the fragmentation behavior.            
-               
+            int timeoutsec = timeout / 1000;
+            // Use the default Ttl value which is 128,
+            // but change the fragmentation behavior.            
+
             // iterate through the arguments
             string[] arguments = Environment.GetCommandLineArgs();
             for (int argIndex=0; argIndex < arguments.Length; argIndex++)
@@ -424,15 +451,15 @@ namespace Pinger
 
                 if (!return_code_only)
                 {
-                    logThis("Pinging " + pt.Target + " at " + sleeptime / 1000 + "sec interval & timeout of " + timeout / 1000 + " seconds");
+                    logThis("Pinging " + pt.Target + " at " + sleeptimesec + "sec interval & timeout of " + timeoutsec + " seconds");
                     logThis("Looking up DNS : ");
                     logThis("      Hostname : " + pt.Hostname);
                     logThis("      IPAddress: " + pt.IPAddress);
                     logThis("");
                     if (!maxCountSpecified && runtimeInHours > 0)
                     {
-                        maxcount = (runtimeInHours * 60 * 60) / (sleeptime / 1000);
-                        //logThis(">> sleeptime = " + sleeptime / 1000 + ",runtimeInHours=" + runtimeInHours + "hrs,maxcount=" + maxcount +"<<");                       
+                        maxcount = (runtimeInHours * 60 * 60) / (sleeptimesec);
+                        //logThis(">> sleeptime = " + sleeptimesec + ",runtimeInHours=" + runtimeInHours + "hrs,maxcount=" + maxcount +"<<");                       
                         logThis(">> Runtime: " + runtimeInHours + "hrs, Total ping expected=" + maxcount + " <<");
                     }
                 }
@@ -441,28 +468,30 @@ namespace Pinger
                     outputCSVFilename = "pinger-" + pt.Target.Replace('.', '_').Trim() + "_" + ".txt";
                     logThis(">> Responses will be saved to " + outputCSVFilename);
                     logThis("");
-                    logToFile("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n", outputCSVFilename);
+                    logToFile("Date,TimeLaps (sec),Target,Reply,Round Trip (ms),TTL,Count", outputCSVFilename);
                 }
                 if (!return_code_only)
                 {
-                    logThis("poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count\n");
+                    logThis("Date,TimeLaps (sec),Target,Reply,Round Trip (ms),TTL,Count");
                 }
                 do
                 {
-                    pt.DateLatestStatus = DateTime.Now;                    
+                    pt.CurrStatusPingDate = DateTime.Now;
+                    pt.CurrHostPingCount++;
                     try
                     {
+                        
                         options.DontFragment = true;
                         PingReply reply;
                         
                         if (pt.IPAddress != null)
                         {
                             reply = pingSender.Send(pt.IPAddress, timeout, buffer, options);
-                            pt.HostPingCount++;
+                            //pt.CurrHostPingCount++; // redundant with the one below ? should I take it outside this if else..may..no time to test it thought.
                         } else
                         {
                             reply = pingSender.Send(pt.Hostname, timeout, buffer, options);
-                            pt.HostPingCount++;
+                            //pt.CurrHostPingCount++; // redundant with the one one ? should I take it outside this if else..may..no time to test it thought.
                         }
 
                         if (reply != null && reply.Options != null)
@@ -475,12 +504,12 @@ namespace Pinger
 
                         pt.ReplyIPAddress = reply.Address.ToString(); // ? reply.Address.ToString() : "-";
                         pt.RoundTrip = reply.RoundtripTime; //? reply.RoundtripTime : -1);
-                        pt.PingStatus = reply.Status.ToString(); //? reply.Status.ToString() : "-");
+                        pt.CurrHostPingStatus = reply.Status.ToString(); //? reply.Status.ToString() : "-");
                                                              // logThis(reply.Status.ToString());
                         if (reply.Status.ToString() == "DestinationHostUnreachable")
                         {
                             pt.Errorcode = 1;
-                            pt.PingStatus = "DestinationHostUnreachable";
+                            pt.CurrHostPingStatus = "DestinationHostUnreachable";
                         } else {
                             pt.Errorcode = 0;
                         }
@@ -488,69 +517,76 @@ namespace Pinger
                     }
                     catch (System.Net.Sockets.SocketException se)
                     {
-                        pt.Errorcode = 1; pt.ErrorMsg = se.Message; pt.PingStatus = se.Message; Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = se.Message; pt.CurrHostPingStatus = se.Message; Thread.Sleep(sleeptime);
                     }
                     catch (System.Net.NetworkInformation.PingException pe)
                     {
-                        pt.Errorcode = 1; pt.ErrorMsg = pe.Message; pt.PingStatus = pe.Message; Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = pe.Message; pt.CurrHostPingStatus = pe.Message; Thread.Sleep(sleeptime);
                     }
                     catch (System.NullReferenceException nre)
                     {
-                        pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.PingStatus = "DestinationHostUnreachable"; Thread.Sleep(sleeptime);
-                        //pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.PingStatus = nre.Message; Thread.Sleep(sleeptime);
+                        pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.CurrHostPingStatus = "DestinationHostUnreachable"; Thread.Sleep(sleeptime);
+                        //pt.Errorcode = 1; pt.ErrorMsg = nre.Message; pt.CurrHostPingStatus = nre.Message; Thread.Sleep(sleeptime);
                     }
                     finally
                     {
                         if (pt.Errorcode == 0)
                         {
                             pt.HostReachableCountUpdate++;
+                            // timelaps = (sleeptimesec) * (pt.CurrHostPingCount - pt.PrevStatusPingCount);
                         }
                         else if (pt.Errorcode == 1)
                         {
                             pt.HostUnreachableCountUpdate++;
-                        } else
+                            // timelaps = (sleeptimesec) * (pt.CurrHostPingCount - pt.PrevStatusPingCount);timelaps = (sleeptimesec + timeoutsec) * (pt.CurrHostPingCount - pt.PrevStatusPingCount);
+                        }
+                        else
                         {
                             logThis("Unknown ping error code");
                         }
 
+                        TimeSpan difference = pt.CurrStatusPingDate.Subtract(pt.PrevStatusPingDate);
+                        timelaps = Math.Ceiling(difference.TotalSeconds);
                         // Create the output string
                         if (!verbose)
                         {
-                            outstr = pt.DateLatestStatus + "," + pt.Hostname + "," + pt.PingStatus + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.HostPingCount;
+                            outstr = pt.CurrStatusPingDate + "," + timelaps + "sec," + pt.Hostname + "," + pt.CurrHostPingStatus + "," + pt.RoundTrip + "ms," + pt.OptionsTtl + "," + pt.CurrHostPingCount;
                         }
                         else
                         {
-                            outstr = "poltime=" + pt.DateLatestStatus + ",trgt=" + pt.Hostname + ",status=" + pt.PingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",count=" + pt.HostPingCount;
+                            outstr = "Date=" + pt.CurrStatusPingDate + ",TimeLapsSec=" + timelaps + "sec,trgt=" + pt.Hostname + ",status=" + pt.CurrHostPingStatus + ",rndtrip=" + pt.RoundTrip + "ms,ttl=" + pt.OptionsTtl + ",count=" + pt.CurrHostPingCount;
                         }
 
-                        if (pt.PreviousPingStatus != pt.PingStatus)
+                        if (pt.PrevHostPingStatus != pt.CurrHostPingStatus)
                         {
+                            pt.PrevStatusPingDate = pt.CurrStatusPingDate;
                             // 1 print to screent the difference
                             if (!return_code_only)
                             {
                                 logThis(outstr);
                             }
-
                             // 2 - write to log file if requested to
                             if (outputScreenToCSV || outputAllToCSV)
                             {
                                 logToFile(outstr, outputCSVFilename);
                             }
 
-                            if (pt.Errorcode == 0 && pt.HostPingCount > 1 && !stopBeeps)
+                            if (pt.Errorcode == 0 && pt.CurrHostPingCount > 1 && !stopBeeps)
                             {
                                 for (int i = 0; i < 2; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
-                            else if (pt.Errorcode == 1 && pt.HostPingCount > 1 && !stopBeeps) //&& smartping
+                            else if (pt.Errorcode == 1 && pt.CurrHostPingCount > 1 && !stopBeeps) //&& smartping
                             {
                                 for (int i = 0; i < 4; i++)
                                 {
                                     Console.Beep();
                                 }
                             }
+                            pt.PrevStatusPingCount = pt.CurrHostPingCount;
+
                         }
                         else // At this point the current and previous ping status differ so we need to process
                         {
@@ -568,13 +604,13 @@ namespace Pinger
                                 logToFile(outstr, outputCSVFilename);
                             }                            
                         } 
-                    }
-                    if (!maxCountSpecified) { maxcount = pt.HostPingCount + 1; }
+                    }                    
+                    if (!maxCountSpecified) { maxcount = pt.CurrHostPingCount + 1; }
                     if (verbose) { pt.Printout(); }
                     //if (loop) { Thread.Sleep(sleeptime); }
-                    if (pt.HostPingCount < maxcount) { Thread.Sleep(sleeptime); }
-                } while (pt.HostPingCount < maxcount);
-                //while (loop && pt.HostPingCount < maxcount) ;
+                    if (pt.CurrHostPingCount < maxcount) { Thread.Sleep(sleeptime); }
+                } while (pt.CurrHostPingCount < maxcount);
+                //while (loop && pt.CurrHostPingCount < maxcount) ;
             }
             //logThis(pt.Errorcode.ToString());
             return pt.Errorcode;
