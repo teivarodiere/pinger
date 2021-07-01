@@ -1,237 +1,43 @@
 ﻿# This is an alternative ping with some alternatives:
 
-Similar to ping in the following ways:
-- It pings and displays every responses/results when you use the pinger '-s' switch
+Syntax  : Pinger.exe <hosts> [OPTIONS]
+Pinger without Options:
+	When pinger runs without options, it only prints to screen when there is a change of connectivity status with the target.
+	For example:
+		When a target becomes unreachable, pinger prints a new line and beep 4 times.
+		When the target becomes reachable, pinger prints a new line and beeps 2 times.
 
-No similar to ping in the following ways:
-- It doesn't summaries the results after pressing Ctrl+C yet
-- Without any switches pinger polls and displays the response each time the current response differs from the previous.
-- The output displays various columns which can be imported into excel or calc via a CSV format (Comma delimited)
-- You can control the ping intervals
-- Vaibale audible alarm to alert of change
-	2 Beeps when ping status changes to SUCCESS
-	4 Beeps when ping status changes from SUCCESS to another
-- You can use the verbose switch '-v' to displays the following extra properties for each ping
-- It performs a DNS resolution before the ping starts
-	 ++++++++++++++++++++++++++++++++++++++++++++
-	 VERBOSE:
-		 hostPingCount = 660
-		 hostNameOrAddress = google.com.au
-		 dnsName = google.com.au
-		 dnsipaddr = 216.58.203.99
-		 dnsReplyIPaddr = 216.58.203.99
-		 dnsLookupStatus = Success
-		 pingStatus = Success
-		 pingStatusPrevious = Unreachable
-		 pingReplyRoundTripInMiliSec = 12
-		 errorMsg = -
-		 errorCode = 0
-		 hostUnreachableCount = 13
-		 hostReachableCount = 647
-		 startDate = 16-Oct-17 10:56:45 AM
-		 endDate = 01-Jan-01 12:00:00 AM
-		 dateLatestStatus = 16-Oct-17 10:56:55 AM
-		 dateLatestStatusPrevious = 16-Oct-17 10:56:45 AM
-	++++++++++++++++++++++++++++++++++++++++++++
+[HOSTS]:
+	single host or multiple hosts comma separated (no spaces).
 
-
-Command examples: 
-#########################################################
-# PING without anything shows the syntax
-#########################################################
-
-C:\>pinger.exe
-
-Pinger is a custom ping utility written by Teiva Rodiere
-Syntax  : Pinger.exe <host> [OPTIONS]
 [OPTIONS]:
-        -n:     No loop. Stops pinger after one attempt
-        -r:     Return Code only. Pinger does not output anything to screen.
-        -s:     Old switch. Pinger behaves the same way the traditional ping
-                It displays every ping output to screen
-        -p <n>: Polling period. Every 'n' seconds
-        -t <n>: Timeout value. The script waits for 'n' seconds before calling it a ping timeout.
-        -v:     Verbose output
+	-n:	Pinger runs once then exists
+	-h <n>: Set the amount of time (in hours) pinger runs for before exiting - Specify a positive value 'n' greater than 1.
+	-c <n>: Specify how many times pinger will poll before exiting - Specify a positive value 'n' greater than 1.
+	-s:	Runs like a Standard ping which prints every ping results onscreen.
+	-p <n>:	Specify how often (in seconds) Pinger will poll the target. Useful with '-s'. Specify a positive value 'n' greater than 1.
+	-t <n>:	Set a Round Trip timeout value of 'n' seconds - Default value is 4 seconds. For high latency links above 4000ms latency,
+		increase this value above 4. When this value is reached, pinger will assume the target is unreachable.
+	-q: 	Mute default audible alarms. By default, pinger will beep when the status changes in the following instance.
+		> 2 beeps when Status transitions from Timeout to Success
+		> 4 beeps when Status transitions from Success to Timeout
+	-f: 	Fastping makes pinger starts a new poll as soon it receives the previous response. Fastping is automatically
+		activated when the Round Trip is above 1 seconds. Use in comibnation with the '-s' switch.
+	-csv: 	Saves all onscreen responses to a CSV. Does not yet take any arguments. The resultant CSV is prefixed with
+		the target name in your current directory.
+	-csvall:Saves all ping results to a CSV even regardless what's onscreen. Useful when wanting only the differences in
+		results onscreen but all of the ping results in a CSV.
+		The resultant CSV is prefixed with the target name in your current directory.
+	-skipDNSLookup: 	Skip DNS lookup.
+	-v: 	Verbose output.
+	-r:	Return Code only. Pinger does verbose to screen (0=success,1=failure).
 
-Return Codes:
-        0       Successfull Ping
-        1       Unsuccessfull or other errors reported
-
-Actions on Failure (To be implemented):
-        -traceroute     Perform a traceroute on failure
-        -webcheck <fullURL>:    Perform a url check on failure
-
-
-#########################################################
-# PING device (The default behaviour)
-#########################################################
-C:\>pinger 192.168.10.76
-Pinging 192.168.10.76 at 1sec interval & timeout of 1 seconds
-Looking up DNS :
-      Hostname : 192.168.10.76
-      IPAddress: 192.168.10.76
-
-poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
-
-16-Oct-17 11:22:02 AM,192.168.10.76,Success,36ms,64,1
-16-Oct-17 11:22:15 AM,192.168.10.76,DestinationHostUnreachable,267ms,-,13		<- 4 Beeps will alert of this change of status
-16-Oct-17 11:22:30 AM,192.168.10.76,Success,50ms,64,18							<- 2 Beeps will alert of this change of status 
-16-Oct-17 11:22:31 AM,192.168.10.76,DestinationHostUnreachable,50ms,-,19
-16-Oct-17 11:22:35 AM,192.168.10.76,Success,329ms,64,20
-16-Oct-17 11:22:37 AM,192.168.10.76,DestinationHostUnreachable,329ms,-,21
-16-Oct-17 11:22:40 AM,192.168.10.76,Success,142ms,64,22
-16-Oct-17 11:22:42 AM,192.168.10.76,DestinationHostUnreachable,142ms,-,23
-16-Oct-17 11:22:45 AM,192.168.10.76,Success,176ms,64,24
-
-#########################################################
-# PING device ONCE
-#########################################################
-C:\>pinger google.com.au -n
-Pinging google.com.au at 1sec interval & timeout of 1 seconds
-Looking up DNS :
-      Hostname : google.com.au
-      IPAddress: 216.58.203.99
-
-poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
-
-16-Oct-17 11:07:56 AM,google.com.au,Success,12ms,56,1
-
-#########################################################
-# PING device every 10 seconds and verbose the output
-#########################################################
-C:\Users\trodiere\Google Drive\Devshed\Pinger\Pinger\bin\Release>pinger google.com.au -p 10 -v
-Pinging google.com.au at 10sec interval & timeout of 1 seconds
-Looking up DNS :
-      Hostname : google.com.au
-      IPAddress: 216.58.203.99
-
-poltime,Target Device,Reply,Round Trip (ms),TTL,Ping Count
-
-++++++++++++++++++++++++++++++++++++++++++++
-VERBOSE:
-     hostPingCount = 1
-     hostNameOrAddress = google.com.au
-     dnsName = google.com.au
-     dnsipaddr = 216.58.203.99
-     dnsReplyIPaddr = -
-     dnsLookupStatus = Success
-     pingStatus = -
-     pingStatusPrevious = -
-     pingReplyRoundTripInMiliSec = 0
-     errorMsg = -
-     errorCode = 0
-     hostUnreachableCount = 0
-     hostReachableCount = 0
-     startDate = 16-Oct-17 11:09:29 AM
-     endDate = 01-Jan-01 12:00:00 AM
-     dateLatestStatus = 16-Oct-17 11:09:29 AM
-     dateLatestStatusPrevious = 01-Jan-01 12:00:00 AM
-poltime=16-Oct-17 11:09:29 AM,trgt=google.com.au,status=Success,rndtrip=12ms,ttl=56,pcount1
-++++++++++++++++++++++++++++++++++++++++++++
-VERBOSE:
-     hostPingCount = 2
-     hostNameOrAddress = google.com.au
-     dnsName = google.com.au
-     dnsipaddr = 216.58.203.99
-     dnsReplyIPaddr = 216.58.203.99
-     dnsLookupStatus = Success
-     pingStatus = Success
-     pingStatusPrevious = -
-     pingReplyRoundTripInMiliSec = 12
-     errorMsg = -
-     errorCode = 0
-     hostUnreachableCount = 0
-     hostReachableCount = 1
-     startDate = 16-Oct-17 11:09:29 AM
-     endDate = 01-Jan-01 12:00:00 AM
-     dateLatestStatus = 16-Oct-17 11:09:39 AM
-     dateLatestStatusPrevious = 16-Oct-17 11:09:29 AM
-
-
-
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-[Feature not yet implemented]
-
-# to perform a traceroute 
-C:\pinger -s <dns or ip> -traceroute
-
-# to perform a web url check and get the code
-C:\pinger -s <dns or ip> -webcheck http://google.com
-
-TTL Values reply by OS
-
- /*
-                Device / OS     Version Protocol    TTL
-                AIX         TCP     60
-                AIX UDP     30
-                AIX     3.2, 4.1    ICMP    255
-                BSDI BSD/ OS 3.1 and 4.0  ICMP    255
-                Compa Tru64 v5.0  ICMP    64
-                Cisco ICMP    254
-                DEC Pathworks   V5 TCP and UDP     30
-                Foundry ICMP    64
-                FreeBSD     2.1R TCP and UDP     64
-                FreeBSD     3.4, 4.0    ICMP    255
-                FreeBSD     5   ICMP    64
-                HP - UX   9.0x TCP and UDP     30
-                HP - UX   10.01   TCP and UDP     64
-                HP - UX   10.2    ICMP    255
-                HP - UX   11  ICMP    255
-                HP - UX   11  TCP     64
-                Irix    5.3     TCP and UDP     60
-                Irix    6.x     TCP and UDP     60
-                Irix    6.5.3, 6.5.8    ICMP    255
-                juniper ICMP    64
-                MPE / IX(HP)         ICMP    200
-                Linux   2.0.x kernel ICMP    64
-                Linux   2.2.14 kernel ICMP    255
-                Linux   2.4 kernel ICMP    255
-                Linux Red Hat 9   ICMP and TCP    64
-                MacOS / MacTCP    2.0.x   TCP and UDP     60
-                MacOS / MacTCP    X(10.5.6)  ICMP / TCP / UDP    64
-                NetBSD ICMP    255
-                Netgear FVG318      ICMP and UDP    64
-                OpenBSD     2.6 & 2.7   ICMP    255
-                OpenVMS     07.01.2002  ICMP    255
-                OS / 2    TCP / IP 3.0      64
-                OSF / 1   V3.2A TCP     60
-                OSF / 1   V3.2A UDP     30
-                Solaris     2.5.1, 2.6, 2.7, 2.8    ICMP    255
-                Solaris     2.8     TCP     64
-                Stratus TCP_OS  ICMP    255
-                Stratus TCP_OS (14.2 -)  TCP and UDP     30
-                Stratus     TCP_OS(14.3 +)  TCP and UDP     64
-                Stratus     STCP    ICMP / TCP / UDP    60
-                SunOS   4.1.3 / 4.1.4     TCP and UDP     60
-                SunOS   5.7     ICMP and TCP    255
-                Ultrix  V4.1 / V4.2A  TCP     60
-                Ultrix  V4.1 / V4.2A  UDP     30
-                Ultrix  V4.2 – 4.5  ICMP    255
-                VMS / Multinet        TCP and UDP     64
-                VMS / TCPware         TCP     60
-                VMS / TCPware         UDP     64
-                VMS / Wollongong  1.1.1.1     TCP     128
-                VMS / Wollongong  1.1.1.1     UDP     30
-                VMS / UCX         TCP and UDP     128
-                Windows     for Workgroups TCP and UDP     32
-                Windows     95  TCP and UDP     32
-                Windows     98  ICMP    32
-                Windows     98, 98 SE   ICMP    128
-                Windows     98  TCP     128
-                Windows     NT 3.51     TCP and UDP     32
-                Windows     NT 4.0  TCP and UDP     128
-                Windows     NT 4.0 SP5 - 32
-                Windows     NT 4.0 SP6 + 128
-                Windows     NT 4 WRKS SP 3, SP 6a   ICMP    128
-                Windows     NT 4 Server SP4     ICMP    128
-                Windows     ME  ICMP    128
-                Windows     2000 pro    ICMP / TCP / UDP    128
-                Windows     2000 family     ICMP    128
-                Windows     Server 2003         128
-                Windows     XP  ICMP / TCP / UDP    128
-                Windows     Vista   ICMP / TCP / UDP    128
-                Windows     7   ICMP / TCP / UDP    128
-                Windows     Server 2008     ICMP / TCP / UDP    128
-                Windows     10  ICMP / TCP / UDP    128
-                */
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Examples:
+	Smart ping server1, and only report when the status changes
+		mono pinger.exe server1
+	Smart ping multiple servers and only report when the status changes
+		mono pinger.exe server1,server2,server3
+	Run a standard ping on a single server 10 times
+		mono pinger.exe server1 -s -c 10
+	Run a standard ping on a single server 10 times but verbose the output and stop the audible noise on status changes
+		mono pinger.exe server1 -s -c 10 -v -q
