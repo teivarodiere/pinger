@@ -87,7 +87,7 @@ Count,TTL,Date,Target,Reply,Time Since Same Reply State (sec),Round Trip Latency
 87,128,3/07/2021 7:19:16 AM,server1.acme.local,TimedOut,122sec,2009ms
 87,128,3/07/2021 7:19:20 AM,server3.acme.local,TimedOut,126sec,2012ms
 88,128,3/07/2021 7:19:41 AM,router1.acme.local,TimedOut,147sec,2009ms
-1121,128,3/07/2021 7:31:18 AM,router1.acme.local,Success,697sec,10ms
+121,128,3/07/2021 7:31:18 AM,router1.acme.local,Success,697sec,10ms
 126,128,3/07/2021 7:32:35 AM,server1.acme.local,Success,800sec,10ms
 126,128,3/07/2021 7:32:38 AM,server3.acme.local,Success,798sec,9ms
 130,128,3/07/2021 7:33:14 AM,nas1.acme.local,Success,863sec,6ms
