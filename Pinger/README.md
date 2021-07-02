@@ -9,7 +9,7 @@ This is an alternative ping with some features not yet found in ping.
 - Can specify a single target device or multiple targets via fqdn, shortname, and IPs. A comma ',' must separate each host with not spaces
 - Can specify ping Timeouts - give up trying to reach remote host after 'n' number of seconds
 - Bypass DNS lookups
-- Issues an audible beep when there is a ping status change - usefull when not looking at screen. Can be silenced with '-q' - MacOS just pays 1 beep regardless of the status change. Cannot change this behavior.
+- Issues an audible beep when there is a ping status change - usefull when not looking at screen. Can be silenced with '-q'. Note that on MacOS, It plays 1 beep regardless of the status change. Cannot change this behavior.
 - Specify pinger to run for a specified amount of time (in minutes) or for a number of ping count
 - Export to CSV the results as it is while running
 - Colour coded outputs to distinguish between successfully pings, timedout, unknownIP, and other status
