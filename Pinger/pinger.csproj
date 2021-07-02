@@ -8,14 +8,14 @@
     <ProjectGuid>{F2F25C14-F377-4C81-A0CA-76A857F5151D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pinger</RootNamespace>
-    <AssemblyName>Pinger</AssemblyName>
+    <RootNamespace>pinger</RootNamespace>
+    <AssemblyName>pinger</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <ApplicationIcon>App.ico</ApplicationIcon>
     <PublishUrl>publish\</PublishUrl>
