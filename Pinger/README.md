@@ -29,11 +29,11 @@ This is an alternative ping with some features not yet found in ping.
 
 Run pinger without options will display the following.
 ```
-Syntax  : Pinger.exe <hosts> [OPTIONS]<br>
-<br>
-[HOSTS]:<br>
-	single host or multiple hosts comma separated (no spaces).<br>
-<br>
+Syntax  : Pinger.exe <hosts> [OPTIONS]
+
+[HOSTS]:
+	single host or multiple hosts comma separated (no spaces).
+
 [OPTIONS]:<br>
 	-n:	Pinger runs once then exists<br>
 	-h <n>: Set the amount of time (in hours) pinger runs for before exiting - Specify a positive value 'n' greater than 1.
@@ -67,7 +67,6 @@ Examples:
 		mono pinger.exe server1 -s -c 10 -v -q
 ```
 # Sample outputs
-
 ```
 iterm:~ admin$ mono pinger server1,server2,server3,nas1,router1
 Pinging the following hosts at 1sec interval (Round Trip timeout set at 1 seconds)
