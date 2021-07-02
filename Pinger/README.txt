@@ -1,4 +1,4 @@
-﻿# This is an alternative ping with some alternatives:
+﻿# This is an alternative ping with some features not yet found in ping.
 
 Syntax  : Pinger.exe <hosts> [OPTIONS]
 
@@ -36,3 +36,24 @@ Examples:
 		mono pinger.exe server1 -s -c 10
 	Run a standard ping on a single server 10 times but verbose the output and stop the audible noise on status changes
 		mono pinger.exe server1 -s -c 10 -v -q
+
+# Features under or to develop
+ - Ability to specify DNS servers  to use
+ - Fix bug when DNS lookup returns multiple IPs 
+ - Handle IPs when reverse lookups are not configured
+ - Specify MTU size
+ - Summary
+ - Web URL check as well as ping
+
+// Features Implemented
+/* - Specify Ping Timeouts
+ * - Bypass DNS lookups
+ * - Specify multiple target IPs (Comma separated)
+ * - Sound beeps when connecting and disconnecting
+ * - Specify pinger to run for minutes or number of counts
+ * - Export to CSV the results (while running)
+ * - Quiet the beeps
+ * - Colour coded
+ * - Performs DNS lookups
+ * - Can ping and report every checks or only report when there is a status change
+ */
