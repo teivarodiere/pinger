@@ -9,7 +9,7 @@ This is an alternative ping with some features not yet found in ping.
 - Can specify a single target device or multiple targets via fqdn, shortname, and IPs. A comma ',' must separate each host with not spaces
 - Can specify ping Timeouts - give up trying to reach remote host after 'n' number of seconds
 - Bypass DNS lookups
-- Issues an audible beep when there is a ping status change - usefull when not looking at screen. Can be silenced with '-q'
+- Issues an audible beep when there is a ping status change - usefull when not looking at screen. Can be silenced with '-q' - MacOS just pays 1 beep regardless of the status change. Cannot change this behavior.
 - Specify pinger to run for a specified amount of time (in minutes) or for a number of ping count
 - Export to CSV the results as it is while running
 - Colour coded outputs to distinguish between successfully pings, timedout, unknownIP, and other status
@@ -34,8 +34,8 @@ Syntax  : Pinger.exe <hosts> [OPTIONS]
 [HOSTS]:
 	single host or multiple hosts comma separated (no spaces).
 
-[OPTIONS]:<br>
-	-n:	Pinger runs once then exists<br>
+[OPTIONS]:
+	-n:	Pinger runs once then exists
 	-h <n>: Set the amount of time (in hours) pinger runs for before exiting - Specify a positive value 'n' greater than 1.
 	-c <n>: Specify how many times pinger will poll before exiting - Specify a positive value 'n' greater than 1.
 	-s:	Runs like a Standard ping which prints every ping results onscreen.

@@ -14,12 +14,48 @@ namespace Pinger
 {
     public enum MessageBeepType
     {
-        Default = -1,
-        Ok = 0x00000000,
-        Error = 0x00000010,
-        Question = 0x00000020,
-        Warning = 0x00000030,
-        Information = 0x00000040,
+        //Default = -1,
+        Ok = 262,
+        Error = 311,
+        // Question = 0x00000020,
+        // Warning = 0x00000030,
+        //Information = 0x00000040,
+    }
+
+    public class BackgroundBeep
+    {
+        static Thread _beepThread;
+        static AutoResetEvent _signalBeep;
+        public enum MessageBeepType
+        {
+            //Default = -1,
+            Ok = 262,
+            Error = 311,
+            // Question = 0x00000020,
+            // Warning = 0x00000030,
+            //Information = 0x00000040,
+        }
+
+        static BackgroundBeep()
+        {
+            _signalBeep = new AutoResetEvent(false);
+            _beepThread = new Thread(() =>
+            {
+                for (; ; )
+                {
+                    _signalBeep.WaitOne();
+                    Console.Beep(311,1600);
+                }
+            }, 1);
+            _beepThread.IsBackground = true;
+            _beepThread.Start();
+        }
+
+
+        public static void Beep()
+        {
+            _signalBeep.Set();
+        }
     }
 
     public class PingerTarget
@@ -794,20 +830,41 @@ namespace Pinger
                                     logToFile(outstr, outputCSVFilename);
                                 }
 
-                                if (pingTargets[currentPingTargetIndex].Errorcode == 0 && pingTargets[currentPingTargetIndex].CurrHostPingCount > 1 && !stopBeeps)
+                                //logThis("Ping Status > " + pingTargets[currentPingTargetIndex].CurrHostPingStatus);
+
+                                if ((pingTargets[currentPingTargetIndex].CurrHostPingStatus != "Success") && !stopBeeps)
                                 {
+                                    
                                     for (int i = 0; i < 2; i++)
                                     {
-                                        Console.Beep();
+                                        BackgroundBeep.Beep();//MessageBeepType.Error);
+                                    }
+                                } else
+                                {
+                                    for (int i = 0; i < 4; i++)
+                                    {
+                                        BackgroundBeep.Beep();//MessageBeepType.Ok);
+                                    }                                }
+                                /*
+                                if (pingTargets[currentPingTargetIndex].Errorcode == 0 && pingTargets[currentPingTargetIndex].CurrHostPingCount > 1 && !stopBeeps)
+                                {
+                                    logThis("2 beeps");
+                                    for (int i = 0; i < 2; i++)
+                                    {
+                                        logThis("..Beep " + i);
+                                        Console.Beep(37, 1000);
                                     }
                                 }
                                 else if (pingTargets[currentPingTargetIndex].Errorcode == 1 && pingTargets[currentPingTargetIndex].CurrHostPingCount > 1 && !stopBeeps) //&& smartping
                                 {
+                                    logThis("4 beeps");
                                     for (int i = 0; i < 4; i++)
                                     {
-                                        Console.Beep();
+                                        logThis("..Beep " + i);
+                                        Console.Beep(38,4000);
                                     }
                                 }
+                                */
                                 pingTargets[currentPingTargetIndex].PrevStatusPingCount = pingTargets[currentPingTargetIndex].CurrHostPingCount;
 
                             }
@@ -968,6 +1025,8 @@ namespace Pinger
             }
             return dnsResults;
         }
+
+
         /// Function: ShowHeader
         /// Information: Displays Author and application details.
         /// </summary>
