@@ -973,8 +973,8 @@ namespace Pinger
         /// </summary>
         static public void ShowHeader()
         {
-            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            logThis("\nPinger is a custom ping utility written by Teiva Rodiere (Build " + version + ")");
+            string version = Assembly.GetExecutingAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetExecutingAssembly().GetName().Version.Minor.ToString();
+            logThis("\nPinger is a custom ping utility - ver " + version);
         }
         /// <summary>
         /// Function: ShowSyntax
