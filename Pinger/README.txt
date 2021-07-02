@@ -1,11 +1,6 @@
 ﻿# This is an alternative ping with some alternatives:
 
 Syntax  : Pinger.exe <hosts> [OPTIONS]
-Pinger without Options:
-	When pinger runs without options, it only prints to screen when there is a change of connectivity status with the target.
-	For example:
-		When a target becomes unreachable, pinger prints a new line and beep 4 times.
-		When the target becomes reachable, pinger prints a new line and beeps 2 times.
 
 [HOSTS]:
 	single host or multiple hosts comma separated (no spaces).
