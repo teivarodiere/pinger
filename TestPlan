@@ -1,0 +1,169 @@
+# .NET Core Cli
+https://learn.microsoft.com/en-us/dotnet/core/tools/
+
+
+Test IPs192.168.22.20
+fd8a:4d23:a340:4960:250:56ff:febb:a99d
+fd8a:4d23:a340:4960:250:56ff:febb:a99d <-works
+fe80::250:56ff:febb:a99d
+
+
+VERSION 3.x
+//Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger fd8a:4d23:a340:4960:250:56ff:febb:a99d,curly,google.com.au -i -v
+    4 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+    Target 0: fd8a:4d23:a340:4960:250:56ff:febb:a99d (nodename nor servname provided, or not known)
+    Target 1: curly.mylab.net (192.168.22.20) DnsOK
+    Target 2: google.com.au (142.250.204.3) DnsOK
+    Target 3: google.com.au-IP-1 (2404:6800:4006:814::2003) DnsOK
+    1,64,11/11/2023 3:06:14pm,fd8a:4d23:a340:4960:250:56ff:febb:a99d,Success,1sec,8ms
+    1,64,11/11/2023 3:06:14pm,curly.mylab.net,Success,1sec,5ms
+    1,64,11/11/2023 3:06:14pm,google.com.au,Success,1sec,33ms
+    1,-1,11/11/2023 3:06:14pm,google.com.au-IP-1,TimedOut,1sec,-1ms
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger fd8a:4d23:a340:4960:250:56ff:febb:a99d,curly,google.com.au,clasdb,nas -v
+    5 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+    Target 0: fd8a:4d23:a340:4960:250:56ff:febb:a99d (nodename nor servname provided, or not known)
+    Target 1: curly.mylab.net (192.168.22.20) DnsOK
+    Target 2: google.com.au (142.250.204.3) DnsOK
+    Target 3: clasdb (nodename nor servname provided, or not known) <- Skipping
+    Target 4: nas.mylab.net (192.168.22.18) DnsOK
+    1,64,11/11/2023 3:09:15pm,fd8a:4d23:a340:4960:250:56ff:febb:a99d,Success,1sec,8ms
+    1,64,11/11/2023 3:09:15pm,curly.mylab.net,Success,1sec,4ms
+    1,64,11/11/2023 3:09:15pm,google.com.au,Success,1sec,33ms
+    1,64,11/11/2023 3:09:15pm,nas.mylab.net,Success,1sec,5ms
+
+
+
+################# VERSION ver 2.1.8112.32654 ######################
+VERSION 2.x
+# Testing character limits
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger oyuasdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+Target 0: oyuasdddddddddddddddddddddddddddddddddddd
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddsss
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss (The size
+ of hostName is too long. It cannot be longer than 255 characters. (Parameter 'hostName')) <- Skipping
+
+
+# Testing local network and internet DNS (Google). Ping the 1st IP returned by DNS 
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au
+    Pinging the following 2 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    Target 1: google.com.au (142.250.204.3) DnsOK
+
+# Testing local network and internet DNS (Google). Ping the All IPs returned by DNS
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -i
+    Pinging the following 3 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    Target 1: google.com.au (142.250.204.3) DnsOK
+    Target 2: google.com.au-IP-1 (2404:6800:4006:814::2003) DnsOK
+
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -ipv4
+    Pinging the following 2 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    Target 1: google.com.au (142.250.204.3) DnsOK
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -i -ipv4
+    Pinging the following 2 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    Target 1: google.com.au (142.250.204.3) DnsOK
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -ipv6
+    Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: google.com.au (2404:6800:4006:814::2003) DnsOK
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -i -ipv6
+    Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: google.com.au (2404:6800:4006:814::2003) DnsOK
+
+# Same test as above but filter by ipv4 addresses only
+# Testing local network and internet DNS (Google). We know that google has multiple IPs, but pinger by default 
+# returns the 1st IP, but with -i we can ask pinger to ping all of the interfaces. We also want only ipv4 addresses
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -i -ipv4
+    Pinging the following 3 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    Target 1: google.com.au (142.250.204.3) DnsOK
+    Target 2: google.com.au-IP-1 (2404:6800:4006:814::2003) <- Skipping
+
+
+# Same test as above but filter by ipv6 addresses only
+# Testing local network and internet DNS (Google). We know that google has multiple IPs, but pinger by default 
+# returns the 1st IP, but with -i we can ask pinger to ping all of the interfaces. We also want only ipv6 addresses
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -i -ipv6
+    Pinging the following 3 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) <- Skipping
+    Target 1: google.com.au (142.250.204.3) <- Skipping
+    Target 2: google.com.au-IP-1 (2404:6800:4006:814::2003) DnsOK
+
+
+# Testing wanting ipv4 addresses only
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au -ipv4
+    Pinging the following 3 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20)
+    Target 1: google.com.au (142.250.204.3)
+    Target 2: google.com.au-IP-1 (2404:6800:4006:814::2003) <- Skipping
+
+
+# Testing a mix of bad, good, then bad again, and good
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger asdj,google.com.au,192.168.22.20,nas
+    Pinging the following 4 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: asdj (nodename nor servname provided, or not known) <- Skipping
+    Target 1: curly.mylab.net (192.168.22.20) DnsOK
+    Target 2: google.com.au (142.250.204.3) DnsOK
+    Target 3: nas.mylab.net (192.168.22.18) DnsOK
+
+
+# Testing removal of duplicates of Display Names. For example, curly has an up of 192.168.22.20 but in the request 
+# asking for curly and 192.168.22.20. It should result in having 1 entry. 
+# Google has different IPs
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger asdj,curly,google.com.au,192.168.22.20,nas,asdasdasdasd
+    Pinging the following 5 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: asdj (nodename nor servname provided, or not known) <- Skipping
+    Target 1: curly.mylab.net (192.168.22.20) DnsOK
+    Target 2: google.com.au (142.250.204.3) DnsOK
+    Target 3: nas.mylab.net (192.168.22.18) DnsOK
+    Target 4: asdasdasdasd (nodename nor servname provided, or not known) <- Skipping
+
+
+# Testing that pinger works correctly if we skipp pinger's DNS Lookup first and ping with what ever target hosts passed as parameter
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly,google.com.au,192.168.22.1 -SkipDnsLookup
+    Pinging the following 3 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly (Skipping DNS Checks)
+    Target 1: google.com.au (Skipping DNS Checks)
+    Target 2: 192.168.22.1 (Skipping DNS Checks)
+
+
+# Test ping curly, max 5 count. Use -s (disables smart ping) and -c to specify count
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly -s -c 5
+    Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    1,128,11/11/2023 1:52:02pm,curly,Success,1sec,7ms
+    2,128,11/11/2023 1:52:03pm,curly,Success,2sec,12ms
+    3,128,11/11/2023 1:52:04pm,curly,Success,3sec,14ms
+    4,128,11/11/2023 1:52:05pm,curly,Success,4sec,9ms
+    5,128,11/11/2023 1:52:06pm,curly,Success,5sec,12ms
+
+
+# Testing 
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly -s -c 2 -ipv4
+    Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+    Target 0: curly.mylab.net (192.168.22.20) DnsOK
+    1,128,11/11/2023 1:53:05pm,curly,Success,1sec,14ms
+    2,128,11/11/2023 1:53:06pm,curly,Success,2sec,8ms
+
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger curly -s -c 2 -ipv6
+    <nothing>
+
+# Testing Ping by IP without DNS resolution
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger 192.168.20.2
+Pinging the following 1 hosts at 1sec interval (Round Trip timeout set at 1 seconds)
+Target 0: 192.168.20.2 (nodename nor servname provided, or not known)
+1,128,11/11/2023 1:56:48pm,192.168.20.2,Success,1sec,7ms
+
+# Testing 
+/Users/teiva/Documents/Devshed/pinger/bin/Debug/net7.0/publish/pinger 
+Curl IPs
+
