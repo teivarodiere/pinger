@@ -11,6 +11,10 @@
 *.copy
 TestPlan
 .DS_Store
+.gitignore
+.gitattributes
+*.log
+*.ini
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
