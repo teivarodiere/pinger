@@ -168,4 +168,3 @@ Target 0: 192.168.20.2 (nodename nor servname provided, or not known)
 # Testing 
 ./pinger/bin/Debug/net7.0/publish/pinger 
 Curl IPs
-
