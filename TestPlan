@@ -1,8 +1,10 @@
+# Example of Test Plans to validate nothing breaks and to demonstrate the behavior
+
 # .NET Core Cli
 https://learn.microsoft.com/en-us/dotnet/core/tools/
 
 
-Test IPs192.168.22.20
+Test IPs 192.168.22.20
 fd8a:4d23:a340:4960:250:56ff:febb:a99d
 fd8a:4d23:a340:4960:250:56ff:febb:a99d <-works
 fe80::250:56ff:febb:a99d
