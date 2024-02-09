@@ -1,6 +1,5 @@
 ﻿// pinger Utility
 // use 'pinger.exe /?' for help
-//
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Net;
@@ -224,36 +223,7 @@ namespace Pinger
             this.parentTarget = "-";
 
         }
-        /*
-                public PingerTarget()
-                {
-                    this._LookupString = "-";
-                    this._DnsResolvedHostname = "-";
-                    this._DisplayName = "-";
-                    //this.dnsipaddr = "-";
-                    this.dnsReplyIPaddr = "-";
-                    this.pingReplyRoundTripInMiliSec = 0;
-                    this.skip = false;
-                    this._DnsLookupStatus = "-";
-                    this.logFile = "-";
-                    this.currHostPingStatus = IPStatus.Unknown;
-                    this.prevHostPingStatus = IPStatus.Unknown;
-                    this.errorMsg = "-";
-                    this.optionsTtl = -1;
-                    this.errorCode = -1; // No Errors
-                    this.hostUnreachableCount = 0;
-                    this.hostReachableCount = 0;
-                    this.currHostPingCount = 0;
-                    this.prevStatusPingCount = 0;
-                    this.currStatusPingDateCurrent = DateTime.Now;
-                    this.currStatusPingDatePrevious = DateTime.Now;
-                    this.prevStatusPingDate = DateTime.Now;
-                    //this._DnsLookupType = false;
-                    this.pingByIP = false;
-                    this.parentTarget = "-";
-                }
-        */
-
+      
         public string DisplayName
         {
             get { return _DisplayName; }
