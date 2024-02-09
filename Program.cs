@@ -1,28 +1,12 @@
 ﻿// pinger Utility
 // use 'pinger.exe /?' for help
 //
-// Udpated for .NET Framework 4.5
-//using System;
-//using System.Linq;
-//using System.Threading;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Net;
 using System.Xml.Serialization;
-//using System.IO;
-//using System.Reflection;
-//using System.Collections.Generic;
-//using System.Threading.Tasks;
-//using System.Runtime.InteropServices;
-//using System.IO.Pipes;
 using System.Net.Sockets;
 using System.ComponentModel;
-//using System.Net.Mail;
-//using System.Runtime.ConstrainedExecution;
-//using Microsoft.VisualBasic;
-//using System.ComponentModel;
-//using System.Threading;
-
 namespace Pinger
 {
     public enum MessageBeepType
