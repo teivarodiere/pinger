@@ -16,6 +16,7 @@ using System.Xml.Serialization;
 //using System.Runtime.InteropServices;
 //using System.IO.Pipes;
 using System.Net.Sockets;
+using System.ComponentModel;
 //using System.Net.Mail;
 //using System.Runtime.ConstrainedExecution;
 //using Microsoft.VisualBasic;
@@ -81,6 +82,12 @@ namespace Pinger
         public static bool OUTPUT_ALL_TO_CSV = false;
         public static bool SKIP_DNS_LOOKUP = false;
         public static string DNS_SERVER = "";
+        public static string SEPARATOR_CHAR = ","; // this string will be used to separate the output
+
+        public static string SUCCESS_STATUS_STRING = "Reachable";
+
+        public static string TIMEDOUT_STATUS_STRING = "Unreachable";
+        public static string OTHER_STATUS_STRING = "Other";
     }
 
     public class BackgroundBeep
@@ -207,10 +214,11 @@ namespace Pinger
         {
             LookupString = targetName;
             TargetIndex = targetIndex;
+            this.Startdate = DateTime.Now;
             this.currStatusPingDateCurrent = DateTime.Now;
             this.currStatusPingDatePrevious = DateTime.Now;
             this.prevStatusPingDate = DateTime.Now;
-            this._DnsResolvedHostname = "-";
+            this._DnsResolvedHostname = "-";            
             this._DisplayName = "-";
             //this._Dnsipaddr = "-";
             this.dnsReplyIPaddr = "-";
@@ -302,13 +310,17 @@ namespace Pinger
             get { return dnsReplyIPaddr; }
             set { dnsReplyIPaddr = value; }
         }
-
+        public IPStatus PrevHostPingStatus
+        {
+            get { return prevHostPingStatus; }
+            set { prevHostPingStatus = value; }
+        }
         public IPStatus CurrHostPingStatus
         {
             get { return currHostPingStatus; }
             set
             {
-                prevHostPingStatus = currHostPingStatus;
+                //prevHostPingStatus = currHostPingStatus;
                 currHostPingStatus = value;
             }
         }
@@ -321,11 +333,6 @@ namespace Pinger
         {
             get { return hostUnreachableCount; }
             set { hostUnreachableCount = value; }
-        }
-
-        public IPStatus PrevHostPingStatus
-        {
-            get { return prevHostPingStatus; }
         }
         public int Errorcode
         {
@@ -699,7 +706,7 @@ namespace Pinger
                         if (items == 0)
                         {
                             inputTargetList = arguments[argIndex];
-                            //ENABLE_CONTINEOUS_PINGS = false;
+                            Globals.ENABLE_CONTINEOUS_PINGS = false;
                         }
                         items++;
                         break;
@@ -1004,6 +1011,7 @@ namespace Pinger
                     {
                         logThisVerbose("[" + MYFUNCTION + "] Target " + pingerTargetsIindex + ": " + tmpPingerT.DisplayName + "(skip=" + tmpPingerT.Skip + ")");
                     }
+                    tmpPingerT.TargetIndex = pingerTargetsIindex;
                     pingableTargetList.Add(tmpPingerT);
                 }
                 pingerTargetsIindex++;
@@ -1055,40 +1063,14 @@ namespace Pinger
                                 outputString += " DnsOK";
                             }
                         }
-                        /*else
-                        {
-                            logThisVerbose("[" + MYFUNCTION + "] Not skipping this object");
-                            if (target.DnsLookupStatus == null)
-                            {
-                                logThis("Target " + hostIndex + ": " + target.DisplayName + " (" + target.Skip + " " + target.IPAddress.ToString() + ")");
-                            }
-                            else
-                            {
-                                if (target.DnsLookupStatus.ToUpper() == "SUCCESS")
-                                {
-                                    logThis("Target " + hostIndex + ": " + target.DisplayName + " (" + target.IPAddress.ToString() + "/" + target.IPAddress.AddressFamily + ")");
-                                }
-                                else
-                                {
-                                    logThis("Target " + hostIndex + ": " + target.DisplayName + " (->" + target.DnsLookupStatus + ")");
-                                }
-                            }
-                        }*/
-
+                     
                         logThis(outputString);//outputString.Replace("InterNetworkV6", "IPv6").Replace("InterNetwork", "IPv4"));
                         logThisVerbose(outputString);
                         hostIndex++; //potentially useless as replace - need to test out
                     }
                 }
 
-                /*if (Globals.FORCE_SLEEP) // if true, default behavior 
-                {
-                    logThis("Pinging the following " + hostnames.Length + " hosts at " + Globals.SLEEP_IN_USER_REQUESTED_IN_SECONDS + "sec interval (Round Trip timeout set at " + timeoutsec + " seconds)");
-                }
-                else // If Globals.FORCE_SLEEP = false, user choice to ignore sleep time, increasing ping requests within a 1 second period
-                {
-                    logThis("Pinging the following " + hostnames.Length + " hosts with timeout window of " + timeoutsec + " seconds");
-                }*/
+
                 logThisVerbose("[" + MYFUNCTION + "] Globals.MAX_COUNT_USER_SPECIFIED = [" + Globals.MAX_COUNT_USER_SPECIFIED + "] Globals.DURATION_USER_SPECIFIED [" + Globals.DURATION_USER_SPECIFIED + "]");
                 if (Globals.MAX_COUNT_USER_SPECIFIED && Globals.DURATION_USER_SPECIFIED)
                 {
@@ -1140,31 +1122,19 @@ namespace Pinger
                     bool continueLoop = true;
                     int LOOP_PING_COUNT = 1;
 
-
-                    /* Build the List of IPs
-                    List<IPAddress> mylist = new List<IPAddress>();
-                    foreach (PingerTarget currPingTarget in pingableTargetList)
-                    {
-                        mylist.Add(currPingTarget.IPAddress);
-                    }*/
-
-
-                    //List<IPAddress> mylist = new List<IPAddress>();
                     do
                     {
                         DateTime DO_WHILE_LOOP_START_DATETIME = DateTime.Now;
                         logThisVerbose("[" + MYFUNCTION + "] Loop Count " + LOOP_PING_COUNT + " on " + DO_WHILE_LOOP_START_DATETIME);
 
-                        int finalistIndex = 1;
                         string subFunction = "PING";
                         logThisVerbose("[" + MYFUNCTION + "][" + subFunction + "] ");
-                        bool enablenNewPingerRouting = true;
-                        if (enablenNewPingerRouting)
+                        bool enablenNewPingerRoutine = true;
+                        if (enablenNewPingerRoutine)
                         {
                             //int foreachLoopIndex = 0;
                             foreach (PingerTarget currPingTarget in pingableTargetList)
                             {
-                                logThis(currPingTarget.TargetIndex + " | " + currPingTarget.DisplayName);
                                 // mylist.Add(currPingTarget.IPAddress);
                                 //                           AutoResetEvent waiter = new AutoResetEvent(false);
                                 //                           Ping pingSenderObject = new Ping();
@@ -1174,279 +1144,67 @@ namespace Pinger
                                 Ping ping = new Ping();
                                 Object userToken = new object();
                                 PingReply pr = await PingExtensions.SendTask(ping, currPingTarget.IPAddress.ToString(), timeoutms, buffer, options, userToken);
-
+                                currPingTarget.CurrHostPingCount++;
                                 //https://stackoverflow.com/questions/45150837/running-a-ping-sendasync-with-status-message
 
                                 if (pr != null)
                                 {
+                                    currPingTarget.CurrHostPingStatus = pr.Status;
+                                    currPingTarget.CurrStatusPingDateCurrent = DateTime.Now;
+                                    // Must update currHost despite the fact that we may not be printing anything on screent
+                                    string message = "";
+                                    string messageVerbose = "";
                                     switch (pr.Status)
                                     {
                                         case IPStatus.Success:
-                                            logThis(userToken.GetType() + "  prIP=" + pr.Address.ToString() + ", currTarget=" + currPingTarget.TargetIndex + " | " + currPingTarget.DisplayName + ", RT=" + pr.RoundtripTime + "ms, ttl=" + pr.Options.Ttl + ",Frag=" + pr.Options.DontFragment + ", replyBuffer=" + pr.Buffer.Length);
+                                            messageVerbose = currPingTarget.DisplayName + "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.SUCCESS_STATUS_STRING + Globals.SEPARATOR_CHAR +"RT=" + pr.RoundtripTime + "ms" + Globals.SEPARATOR_CHAR +"ttl=" + pr.Options.Ttl +  Globals.SEPARATOR_CHAR +"Frag=" + pr.Options.DontFragment +  Globals.SEPARATOR_CHAR + "replyBuffer=" + pr.Buffer.Length + Globals.SEPARATOR_CHAR +"count="+currPingTarget.CurrHostPingCount;
+                                            message = currPingTarget.DisplayName + "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.SUCCESS_STATUS_STRING;
+                                            currPingTarget.HostReachableCountUpdate++;
                                             break;
                                         case IPStatus.TimedOut:
-                                            logThis(userToken.GetType() + "  prIP=" + pr.Address.ToString() + ", currTarget=" + currPingTarget.TargetIndex + " | " + currPingTarget.DisplayName + " Timouts");
+                                            messageVerbose = currPingTarget.DisplayName + "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.TIMEDOUT_STATUS_STRING + Globals.SEPARATOR_CHAR +"count="+currPingTarget.CurrHostPingCount;
+                                            message = currPingTarget.DisplayName+ "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.TIMEDOUT_STATUS_STRING;
+                                            currPingTarget.HostUnreachableCountUpdate++;
                                             break;
                                         default:
-                                            logThis(userToken.GetType() + "  prIP=" + pr.Address.ToString() + ", currTarget=" + currPingTarget.TargetIndex + " | " + currPingTarget.DisplayName + " UnknownStatus");
+                                            messageVerbose = currPingTarget.DisplayName + "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.OTHER_STATUS_STRING +Globals.SEPARATOR_CHAR +"count="+currPingTarget.CurrHostPingCount;
+                                            message = currPingTarget.DisplayName + "["+currPingTarget.IPAddress.ToString()+"]"+ Globals.SEPARATOR_CHAR + Globals.OTHER_STATUS_STRING;
+                                            currPingTarget.HostUnreachableCountUpdate++;
                                             break;
                                     }
+                                  
+                                    // Output status updates to screen only when required
+                                    if (Globals.ENABLE_CONTINEOUS_PINGS || (currPingTarget.CurrHostPingStatus != currPingTarget.PrevHostPingStatus))
+                                    {
+                                        string finalMessage;
+                                        //logThis(currPingTarget.TargetIndex + " | " + currPingTarget.DisplayName);
+                                        
+                                        if(currPingTarget.CurrHostPingCount != 1)
+                                        {
+                                            TimeSpan duration = (currPingTarget.CurrStatusPingDateCurrent).Subtract(currPingTarget.PrevStatusPingDate);
+                                            string message2 = "In previous state ["+currPingTarget.PrevHostPingStatus + "] for " + ToReadableString(duration);
+                                            finalMessage = message + Globals.SEPARATOR_CHAR + message2;
+                                        } else {
+                                            if (Globals.PROGRAM_VERBOSE_LEVEL1)
+                                            {
+                                                finalMessage = messageVerbose;
+                                            } else {
+                                                finalMessage = message;
+                                            }  
+                                        }
+                                        logThis(finalMessage);
+                                    }
+                                    if (currPingTarget.CurrHostPingStatus != currPingTarget.PrevHostPingStatus)
+                                    {
+                                        currPingTarget.PrevStatusPingDate = currPingTarget.CurrStatusPingDateCurrent;
+                                    }
+                                    currPingTarget.PrevHostPingStatus = currPingTarget.CurrHostPingStatus;
                                 }
-
                             }
 
                         }
 
-                        bool enableOldPingerRouting = false;
-                        if (enableOldPingerRouting)
-                        {
-                            foreach (PingerTarget currPingTarget in pingableTargetList)
-                            {
-                                int LOOP_DURATION_IN_MILLISECONDS = 0; // reset to Zero for the next loop
-                                currPingTarget.CurrStatusPingDateCurrent = DateTime.Now;
-                                currPingTarget.CurrHostPingCount++;
-                                if (currPingTarget.IPAddress != null)
-                                {
-                                    logThisVerbose("[" + MYFUNCTION + "] Processing " + finalistIndex + "/" + pingableTargetList.Count + ": " + currPingTarget.DisplayName + "[" + currPingTarget.IPAddress.ToString() + "]");
-                                    currPingTarget.PingByIP = true;
-                                }
-                                else
-                                {
-                                    logThisVerbose("[" + MYFUNCTION + "] Processing " + finalistIndex + "/" + pingableTargetList.Count + ": " + currPingTarget.DisplayName);
-                                    currPingTarget.PingByIP = false;
-                                }
-                                //* 
-                                //*STEP 4.b: IF THE OBJECT TO PING HAS BEEN MARKED AS INVALID IT IS SKIPPED, SO UNLESS the.SKIP is false, it is ignored
-                                //*
-                                //if (!currPingTarget.Skip)
-                                //{
-                                // THE SYSTEM WAS NOT SKIPPED BECAUSE IT APPEARS TO BE A VALID SYSTEM
-                                try
-                                {
-                                    // Set options for transmission:
-                                    // The data can go through 64 gateways or routers
-                                    // before it is destroyed, and the data packet
-                                    // cannot be fragmented.
-                                    PingOptions options = new PingOptions(Globals.DEFAULT_PING_TIME_TO_LEAVE, true);
-                                    //options.Ttl=64;
-                                    //options.DontFragment = true;
-
-                                    PingReply reply;
-                                    if (currPingTarget.PingByIP && currPingTarget.IPAddress != null)
-                                    {
-                                        logThisVerbose("\tBy IP Address ]");
-                                        reply = pingSender.Send(currPingTarget.IPAddress.ToString(), timeoutms, buffer, options);
-                                    }
-                                    else
-                                    {
-                                        logThisVerbose("\tBy LookupString  ]");
-                                        reply = pingSender.Send(currPingTarget.LookupString, timeoutms, buffer, options);
-                                    }
-
-                                    //if (reply != null && reply.Options != null)
-                                    if (reply.Status == IPStatus.Success)
-                                    {
-                                        logThisVerbose("\tReceived Reply OK");
-                                        if (reply.Options != null)
-                                        {
-                                            currPingTarget.OptionsTtl = reply.Options.Ttl;
-                                        }
-                                        currPingTarget.ReplyIPAddress = reply.Address.ToString();
-                                        currPingTarget.RoundTrip = reply.RoundtripTime;
-                                        logThisVerbose("\t\t reply.status (new status) = " + reply.Status);
-                                        currPingTarget.CurrHostPingStatus = reply.Status;
-                                        currPingTarget.Errorcode = 0;
-                                        logThisVerbose("\t\t currPingTarget.PrevHostPingStatus = " + currPingTarget.PrevHostPingStatus);
-                                    }
-                                    else
-                                    {
-                                        logThisVerbose("\t Received Reply Not OK]");
-                                        currPingTarget.Errorcode = 1;
-                                        if (reply == null)
-                                        {
-                                            logThisVerbose("\treply is null]");
-                                            logThisVerbose("\t\t reply.status (new status) = null");
-
-                                            currPingTarget.CurrHostPingStatus = IPStatus.TimedOut;
-                                            logThisVerbose("\t\t reply.status (adjusted) = " + currPingTarget.CurrHostPingStatus);
-                                            logThisVerbose("\t\t currPingTarget.PrevHostPingStatus = " + currPingTarget.PrevHostPingStatus);
-                                        }
-                                        if (reply.Options == null)
-                                        {
-                                            logThisVerbose("\treply.Options is null]");
-                                            currPingTarget.CurrHostPingStatus = IPStatus.TimedOut;
-                                        }
-                                        // In Windows, when a server goes offline, it comes through here
-                                        currPingTarget.OptionsTtl = -1;
-                                    }
-
-                                }
-                                catch (System.Net.NetworkInformation.PingException pe)
-                                {
-                                    currPingTarget.Errorcode = 1;
-                                    currPingTarget.ErrorMsg = pe.Message;
-                                    logThisVerbose("\tPingException: ");
-                                    logThisVerbose("\t\t" + pe.Message);
-                                    // if (Globals.FORCE_SLEEP)
-                                    //{
-                                    //    Thread.Sleep(Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS);
-                                    //}
-                                }
-                                catch (System.Net.Sockets.SocketException se)
-                                {
-                                    currPingTarget.Errorcode = 1;
-                                    currPingTarget.ErrorMsg = se.Message;
-                                    currPingTarget.Skip = true;
-                                    currPingTarget.CurrHostPingStatus = IPStatus.BadDestination;
-                                    logThisVerbose("\tSocketException: ");
-                                    logThisVerbose("\t\t" + se.Message);
-                                }
-                                catch (System.NullReferenceException nre)
-                                {
-                                    currPingTarget.Errorcode = 1;
-                                    currPingTarget.ErrorMsg = nre.Message;
-                                    logThisVerbose("\tNullReferenceException: ");
-                                    logThisVerbose("\t\t" + nre.Message);
-                                }
-                                finally
-                                {
-                                    if (currPingTarget.Errorcode == 0)
-                                    {
-                                        currPingTarget.HostReachableCountUpdate++;
-                                    }
-                                    else if (currPingTarget.Errorcode == 1)
-                                    {
-                                        currPingTarget.HostUnreachableCountUpdate++;
-                                    }
-                                    else
-                                    {
-                                        logThis("Unknown ping error code");
-                                    }
-
-                                    TimeSpan difference = currPingTarget.CurrStatusPingDateCurrent.Subtract(currPingTarget.PrevStatusPingDate);
-                                    timelapsSinceStatusChange = Math.Ceiling(difference.TotalSeconds);
-
-                                    LOOP_DURATION_IN_MILLISECONDS = int.Parse(currPingTarget.RoundTrip.ToString());
-
-                                    // *******************************************
-                                    //  CREATE OUTPUT STRING FOR SCREEN AND CSV EXPORT
-                                    //********************************************
-                                    string displayTargetName;
-                                    if (currPingTarget.ParentTarget != "-")
-                                    {
-                                        //displayTargetName = currPingTarget.IPAddress.ToString();
-                                        displayTargetName = currPingTarget.DisplayName;
-                                    }
-                                    else
-                                    {
-                                        //displayTargetName = currPingTarget.LookupString;
-                                        displayTargetName = currPingTarget.DisplayName;
-                                    }
-                                    if (!verbose)
-                                    {
-                                        //logThis(currPingTarget.Target);
-                                        //logThis(currPingTarget.CurrHostPingStatus.ToString());
-                                        if (Globals.OUTPUT_SCREEN_TO_CSV || Globals.OUTPUT_ALL_TO_CSV)
-                                        {
-                                            // BUILD THE OUTPUT STRING WITH RESULTS TO EXPORT TO A CSV
-                                            outstr = currPingTarget.CurrHostPingCount + "," + currPingTarget.OptionsTtl + "," + currPingTarget.CurrStatusPingDateCurrent + "," + displayTargetName + "," + currPingTarget.CurrHostPingStatus.ToString() + "," + timelapsSinceStatusChange + "," + currPingTarget.RoundTrip;
-                                        }
-                                        else
-                                        {
-                                            // BUILD THE OUTPUT STRING FOR ONSCREEN OUTPUT ---->
-                                            outstr = currPingTarget.CurrHostPingCount + "," + currPingTarget.OptionsTtl + "," + currPingTarget.CurrStatusPingDateCurrent + "," + displayTargetName + "," + currPingTarget.CurrHostPingStatus.ToString() + "," + timelapsSinceStatusChange + "sec," + currPingTarget.RoundTrip + "ms"; // + proposedSleepTime;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        outstr = "Count=" + currPingTarget.CurrHostPingCount + ",ttl=" + currPingTarget.OptionsTtl + ",Date =" + currPingTarget.CurrStatusPingDateCurrent + ",TimeLapsSec=" + timelapsSinceStatusChange + "sec,trgt=" + displayTargetName + ",status=" + currPingTarget.CurrHostPingStatus.ToString() + ",rndtrip=" + currPingTarget.RoundTrip + "ms";
-                                    }
-
-                                    // *******************************************
-                                    //    DISPLAY PING RESULT HERE FOR THIS OBJECT
-                                    //********************************************
-
-                                    // If Globals.ENABLE_CONTINEOUS_PINGS is enabled - Not a smart ping, then print the results
-                                    if (Globals.ENABLE_CONTINEOUS_PINGS)
-                                    {
-                                        // Display the results
-                                        logThis(outstr);
-
-                                        // Check if also need to output to CSV
-                                        if (Globals.OUTPUT_ALL_TO_CSV)
-                                        {
-                                            // Export results to CSV - TBA
-                                            logToFile(outstr, outputCSVFilename);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        //* 
-                                        //* The smart ping is enabled (ENABLE_CONTINEOUS_PINGS = false), proceed to showing the results and/or exporting results to CSV
-                                        //*
-
-                                        // Display if the current and current ping status differ only
-                                        //if 
-                                        //{
-                                        //    logThisVerbose("[" + currPingTarget.Target + "] currPingTarget.PrevHostPingStatus = " + currPingTarget.PrevHostPingStatus);
-                                        //    logThisVerbose("[" + currPingTarget.Target + "] currPingTarget.CurrHostPingStatus = " + currPingTarget.CurrHostPingStatus);
-                                        //}
-                                        if ((currPingTarget.PrevHostPingStatus != currPingTarget.CurrHostPingStatus) || currPingTarget.CurrHostPingCount == 1)
-                                        {
-                                            // Replace the latest Ping status and Date into the 'Previous' variables for the next iteration
-                                            currPingTarget.PrevStatusPingDate = currPingTarget.CurrStatusPingDateCurrent;
-                                            currPingTarget.PrevStatusPingCount = currPingTarget.CurrHostPingCount;
-
-                                            // 1 print to screen the difference
-                                            if (!return_code_only)
-                                            {
-                                                logThis(outstr);
-                                            }
-                                            // 2 - write to log file if requested to
-                                            if (Globals.OUTPUT_SCREEN_TO_CSV || Globals.OUTPUT_ALL_TO_CSV)
-                                            {
-                                                logToFile(outstr, outputCSVFilename);
-                                            }
-
-                                            // Make beep sounds or not to alert the user on change
-                                            if (!Globals.SILENCE_AUDIBLE_ALARM)
-                                            {
-                                                if (currPingTarget.CurrHostPingStatus != IPStatus.Success)
-                                                {
-
-                                                    for (int i = 0; i < Globals.BEEP_COUNTS_SUCCESSFULL; i++)
-                                                    {
-                                                        logThisVerbose("[" + MYFUNCTION + "] [BEEP] - Success");
-                                                        //BackgroundBeep.Beep();//MessageBeepType.Error);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    for (int i = 0; i < Globals.BEEP_COUNTS_UNSUCCESSFULL; i++)
-                                                    {
-                                                        logThisVerbose("[" + MYFUNCTION + "] [BEEP] - No Success");
-                                                        //BackgroundBeep.Beep();//MessageBeepType.Ok);
-                                                    }
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                }
-                                currPingTarget.CurrStatusPingDatePrevious = DateTime.Now;
-                                //} // if skip == false
-
-                                //if (Globals.MAX_COUNT_USER_SPECIFIED)
-                                //{
-                                //    //Globals.PING_COUNT_VALUE_USER_SPECIFIED = currPingTarget.CurrHostPingCount + 1;
-                                //    Globals.PING_COUNT_RUNTIME_VALUE = currPingTarget.CurrHostPingCount + 1;
-                                //}
-                                finalistIndex++;
-                                if (verbose) { currPingTarget.Printout(); }
-
-                            } // End Foreach
-                        }
-
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         // Based on how long since the foreach command took to ping every hosts, recalculate how long to sleep this thred for.
                         // For large numbers, generally the script doesn't sleep, but for small numbers, it may sleep.
                         DateTime DO_WHILE_LOOP_END_DATETIME = DateTime.Now;
@@ -1456,30 +1214,13 @@ namespace Pinger
                         // This is hard to make sense when are a lot of nodes to ping
                         if (Globals.FORCE_SLEEP)// && (pingTargets.Length == 1))
                         {
-                            /*//                       
-                            //if (currPingTarget.CurrHostPingCount < Globals.PING_COUNT_VALUE_USER_SPECIFIED) { Thread.Sleep(proposedSleepTime); }
-                            //TimeSpan difference = pingTargets[0].CurrStatusPingDateCurrent.Subtract(pingTargets[0].PrevStatusPingDate);
-                            //int timeinMilliseconds = ((int)Math.Ceiling(difference.TotalMilliseconds));
-                            //if (Math.Ceiling(difference.TotalMilliseconds) <= (sleeptime / pingTargets.Length))
-                            //{
-                            //logThis(" 1 Sleeping for " + timeinMilliseconds + "ms");
-                            // example 1000 - 2000 = -1000
-
-                            // Calculate Proposed sleeptime
-                            // value DO_WHILE_LOOP_DATETIME_DIFFERENCE is always Negative
-                            // value of Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS is always positive
-                            //*/
-
                             int sleepRequiredInMilliseconds = Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS + timelapsInMilliseconds;
 
                             if (sleepRequiredInMilliseconds > 0)// (Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS - timelapsInMilliseconds) > 0)
                             {
-                                //if (pingTargets[0].CurrHostPingCount < Globals.PING_COUNT_VALUE_USER_SPECIFIED) { Thread.Sleep(sleeptime / pingTargets.Length); }
                                 logThisVerbose("\t\tGlobals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS=" + Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS);
                                 logThisVerbose("\t\tCalculated value of timelapsInMilliseconds = " + timelapsInMilliseconds);
                                 logThisVerbose("\t\tSleeping for " + sleepRequiredInMilliseconds + " miliseconds");
-                                // if (tmpHostObjectList[0].CurrHostPingCount < Globals.PING_COUNT_VALUE_USER_SPECIFIED) { Thread.Sleep(Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS - timelapsInMilliseconds); }
-
                                 Thread.Sleep(sleepRequiredInMilliseconds);
                             }
                             else
@@ -1487,15 +1228,7 @@ namespace Pinger
                                 logThisVerbose("\t\tGlobals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS=" + Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS);
                                 logThisVerbose("\t\tCalculated value of timelapsInMilliseconds = " + timelapsInMilliseconds);
                                 logThisVerbose("\t\ttimelapsInMilliseconds to large (" + sleepRequiredInMilliseconds + "ms)" + ", no need to sleep");
-                                // Don't sleep at all if (pingTargets[0].CurrHostPingCount < Globals.PING_COUNT_VALUE_USER_SPECIFIED) { Thread.Sleep(Globals.SLEEP_IN_USER_REQUESTED_IN_MILLISECONDS - timelapsInMilliseconds); }
                             }
-                            //} else
-                            //{
-                            //  logThis(">> Sleeping for " + timeinMilliseconds + "ms");
-                            // Don't wait
-                            //}
-
-
                         }
 
                         // If User requested to ping by count
@@ -1518,13 +1251,11 @@ namespace Pinger
                                 continueLoop = true;
                             }
                         }
-                        //Globals.DURATION_END_DATE;
-                        //var result = (DateTime.Now - DO_WHILE_LOOP_START_DATETIME).TotalHours;
                         if (Globals.DURATION_USER_SPECIFIED)
                         {
                             DateTime thisDate = DateTime.Now;
                             double result = (Globals.DURATION_END_DATE - thisDate).TotalHours;// / 150;
-                                                                                              //logThisVerbose("[END] result=" + result + ", Globals.DURATION_END_DATE=" + Globals.DURATION_END_DATE, Globals.PRINT_NEW_LINE);
+                            //logThisVerbose("[END] result=" + result + ", Globals.DURATION_END_DATE=" + Globals.DURATION_END_DATE, Globals.PRINT_NEW_LINE);
                             logThisVerbose("[END] LOOP_PING_COUNT=" + LOOP_PING_COUNT + ", Globals.DURATION_END_DATE=" + Globals.DURATION_END_DATE + ", current Time=" + thisDate, Globals.PRINT_NEW_LINE);
                             if (result < 0)
                             {
@@ -1541,81 +1272,13 @@ namespace Pinger
                 else
                 {
                     logThisVerbose("[" + MYFUNCTION + "]  There were no objects to ping. Exiting..");
-                    //return 0;
                 }
-
             }
             else
             {
                 logThisVerbose("[" + MYFUNCTION + "]  There were no objects to ping. Exiting..");
-                //return 0;
             }
-            //return pt.Errorcode;
-            //return 0;
         }
-
-        /**
-        * Automate Diagnostics Function and see the results
-*/
-        /* public static void RunDiag()
-         {
-             string MYFUNCTION = "RunDiag";
-             // pinger 192.168.0.1 gives an exception
-             // pinger 192.124.249.107 doesn't work (invalid hostname and does notjhing)
-             // pinger ips,badnames,legitnames
-             // pinger time.optusnet.com.au -i (all of the ips)
-             // When using DNs.GetHostEntry, the following fails for 192 addresses. It works when Using DNS.Resolve(), but that function is depricated
-
-             /* Target 2: -(Could not resolve host '192.124.249.107') - DNS lookup by IP fails on this guy 192.124.249.107
-              * On MacOS
-                         [VERBOSE] [MAIN] ++++++++++++++++++++++++++++++++++++++++++++++++++
-                         [VERBOSE] [MAIN] User search string [ 192.124.249.107 ]
-                         [VERBOSE] [MYFUNCTION] Searching by IP for 192.124.249.107
-                         [VERBOSE] [MYFUNCTION] An Exception Caught
-                         [VERBOSE] [MYFUNCTION]          se.HResult = -2147467259
-                         [VERBOSE] [MYFUNCTION]          se.Message = Could not resolve host '192.124.249.107'
-                         [VERBOSE] [MAIN]    DNS Lookup Completed - Not sure of the DNS lookup outcome
-
-              * on Windows
-                         [VERBOSE] [MAIN] ++++++++++++++++++++++++++++++++++++++++++++++++++
-                         [VERBOSE] [MAIN] User search string [ 192.124.249.107 ]
-                         [VERBOSE] [MYFUNCTION] Searching by IP for 192.124.249.107
-                         [VERBOSE] [MYFUNCTION]     hostEntry.AddressList.Count = 0
-                         [VERBOSE] [MYFUNCTION]     hostEntry.Aliases.Count = 0
-                         [VERBOSE] [MYFUNCTION] An Exception Caught
-                         [VERBOSE] [MYFUNCTION]          se.HResult = -2146233080
-                         [VERBOSE] [MYFUNCTION]          se.Message = Index was outside the bounds of the array. <- Different error
-              */
-        // Issue pinging ipv6 on macOS
-
-        /**
-         * 
-         * 
-         * 
-         * 
-         * Teivas-MBP:~ teiva$ pinger nas,msd,firewall
-
-Unhandled Exception:
-System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
-Parameter name: index
-at System.Collections.Generic.List`1[T].get_Item (System.Int32 index) [0x00009] in <92218043474744ea9d64d27064c35dcb>:0
-at Pinger.Program.Main (System.String[] args) [0x0151f] in <b8c39badb567473e95b6b476855540b9>:0
-[ERROR] FATAL UNHANDLED EXCEPTION: System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
-Parameter name: index
-at System.Collections.Generic.List`1[T].get_Item (System.Int32 index) [0x00009] in <92218043474744ea9d64d27064c35dcb>:0
-at Pinger.Program.Main (System.String[] args) [0x0151f] in <b8c39badb567473e95b6b476855540b9>:0
-
-
-} */
-
-
-        /* public static void logThisVerbose(string msg, bool newline = false)
-          {
-              if (Globals.PROGRAM_VERBOSE_LEVEL2 &)
-              {
-                  logThis("[" + MYFUNCTION + "]  " + msg);
-              }
-          }*/
 
         public static void logThisVerbose(string msg, bool newline = true)
         {
@@ -1640,20 +1303,27 @@ at Pinger.Program.Main (System.String[] args) [0x0151f] in <b8c39badb567473e95b6
         public static void logThis(string msg)
         {
             string MYFUNCTION = "logThis";
-            if (msg.Contains("TimedOut"))
+            if (msg.Contains(Globals.SEPARATOR_CHAR + Globals.TIMEDOUT_STATUS_STRING))
+            {
+                // Console.BackgroundColor = ConsoleColor.Black;
+                // Console.ForegroundColor = ConsoleColor.White;
+                Console.BackgroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+             else if (msg.Contains(Globals.SEPARATOR_CHAR + Globals.SUCCESS_STATUS_STRING) || msg.Contains(Globals.SEPARATOR_CHAR + "OK") || msg.Contains("DnsOK"))
             {
                 Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+             else if (msg.Contains(Globals.SEPARATOR_CHAR + Globals.OTHER_STATUS_STRING))
+            {
+                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.ForegroundColor = ConsoleColor.White;
             }
             else if (msg.Contains("Skip") || msg.Contains("too long") || msg.Contains("BadDestination") || msg.Contains("Unknown") || msg.Contains("UnknownIP") || msg.Contains("Invalid") || msg.Contains("Could not resolve") || msg.Contains("not known") || msg.Contains("DestinationHostUnreachable") || msg.Contains("Unknown ping error code"))
             {
                 Console.BackgroundColor = ConsoleColor.White;
                 Console.ForegroundColor = ConsoleColor.Black;
-            }
-            else if (msg.Contains("Success") || msg.Contains("OK"))
-            {
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Green;
             }
             if (msg.Contains("[" + MYFUNCTION + "] "))
             {
@@ -1909,6 +1579,20 @@ at Pinger.Program.Main (System.String[] args) [0x0151f] in <b8c39badb567473e95b6
             }
             return newObject;
         }
+        public static string ToReadableString(TimeSpan span)
+        {
+            string formatted = string.Format("{0}{1}{2}{3}",
+                span.Duration().Days > 0 ? string.Format("{0:0} day{1}, ", span.Days, span.Days == 1 ? String.Empty : "s") : string.Empty,
+                span.Duration().Hours > 0 ? string.Format("{0:0} hour{1}, ", span.Hours, span.Hours == 1 ? String.Empty : "s") : string.Empty,
+                span.Duration().Minutes > 0 ? string.Format("{0:0} minute{1}, ", span.Minutes, span.Minutes == 1 ? String.Empty : "s") : string.Empty,
+                span.Duration().Seconds > 0 ? string.Format("{0:0} second{1}", span.Seconds, span.Seconds == 1 ? String.Empty : "s") : string.Empty);
+
+            if (formatted.EndsWith(", ")) formatted = formatted.Substring(0, formatted.Length - 2);
+
+            if (string.IsNullOrEmpty(formatted)) formatted = "0 seconds";
+
+            return formatted;
+        }
 
         public static void PrintOutGlobalVariables()
         {
@@ -1990,7 +1674,7 @@ at Pinger.Program.Main (System.String[] args) [0x0151f] in <b8c39badb567473e95b6
                              "\t-dnsonly: \tPing DNS resolvable targets only from the list.\n" +
                              "\t-i: \tPing all IP addresses enumerated from the NSLOOKUP query.\n" +
                              "\t-ipv4: \tPing all IPv4 addresses only.\n" +
-                             //"\t-ipv6: \tPing all IPv6 addresses only.\n" +
+                             "\t-ipv6: \tPing all IPv6 addresses only.\n" +
                              "\t-v: \tVerbose Variables.\n" +
                              "\t-vv: \tVerbose Runtime.\n" +
                              "\t-r:\tReturn Code only. Pinger does verbose to screen (0=Pingable,1=failure).\n");
