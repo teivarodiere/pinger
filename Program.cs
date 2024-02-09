@@ -166,6 +166,12 @@ namespace Pinger
         }
     }
 
+    public class DateRange {
+        public int Index {get; set;}
+        public DateTime Start {get; set;}
+        public DateTime End {get; set;}
+    }
+
     public class PingerTarget
     {
         public required int TargetIndex { get; set; }
@@ -183,6 +189,7 @@ namespace Pinger
         private int errorCode;
         private int optionsTtl;
         private int hostUnreachableCount;
+        public List<DateRange> UnreachableDates { get; private set; }
         private TimeSpan hostUnreachableTimespan;
         private TimeSpan hostReachableTimespan;
         private int hostReachableCount;
@@ -206,6 +213,7 @@ namespace Pinger
         {
             LookupString = targetName;
             TargetIndex = targetIndex;
+            UnreachableDates = new List<DateRange>();
             this.Startdate = DateTime.Now;
             this.currStatusPingDateCurrent = DateTime.Now;
             this.currStatusPingDatePrevious = DateTime.Now;
@@ -297,6 +305,19 @@ namespace Pinger
             get { return hostUnreachableCount; }
             set { hostUnreachableCount = value; }
         }
+        // public List<DateRange> UnreachableDates {get ;private set;}
+        // {
+        //     get { 
+        //         return unreachableDates; 
+        //     }
+        //     set { 
+        //         DateRange dr = new DateRange();
+        //         dr.Index = value.Index;
+        //         dr.Start = value.Start; 
+        //         dr.End = value.End; 
+        //         unreachableDates.Add(dr);
+        //     }
+        // }
         public TimeSpan HostUnreachableTimespan
         {
             get { return hostUnreachableTimespan; }
@@ -306,7 +327,7 @@ namespace Pinger
         public TimeSpan HostReachableTimespan
         {
             get { return hostReachableTimespan; }
-            set { hostReachableTimespan += value; }
+            set { hostReachableTimespan = value; }
         }
        
         public int Errorcode
@@ -1161,14 +1182,13 @@ namespace Pinger
                                     if ( (currPingTarget.CurrHostPingStatus == IPStatus.Success) && (currPingTarget.CurrHostPingCount > 1 ))
                                     {
                                         TimeSpan duration = (currPingTarget.CurrStatusPingDateCurrent).Subtract(currPingTarget.PrevStatusPingDate);
-                                        // LogThis ("Time span duration before: " + currPingTarget.HostUnreachableTimespan);
                                         currPingTarget.HostUnreachableTimespan += duration;
-                                        // LogThis ("Time span duration after: " + currPingTarget.HostUnreachableTimespan);
+                                        DateRange newDr = new DateRange();
+                                        newDr.Index = currPingTarget.CurrHostPingCount;
+                                        newDr.Start = currPingTarget.PrevStatusPingDate;
+                                        newDr.End = currPingTarget.CurrStatusPingDateCurrent;
+                                        currPingTarget.UnreachableDates.Add(newDr);
                                     } 
-                                    // else {
-                                    //     // currPingTarget.PrevStatusPingDate = timer;
-                                    // }
-                                    
                                     string finalMessage;
                                     if (Globals.PROGRAM_VERBOSE_LEVEL1)
                                     {
@@ -1183,9 +1203,12 @@ namespace Pinger
                                          //   TimeSpan duration = (currPingTarget.CurrStatusPingDateCurrent).Subtract(currPingTarget.PrevStatusPingDate);
                                            
                                         }
-                                        TimeSpan duration = (currPingTarget.CurrStatusPingDateCurrent).Subtract(currPingTarget.PrevStatusPingDate);
-                                        string message2 = "(In previous state ["+currPingTarget.PrevHostPingStatus + "] for " + ToReadableString(duration) +")";
-                                        finalMessage += message2;
+                                        if (!Globals.ENABLE_CONTINEOUS_PINGS)
+                                        {
+                                            TimeSpan duration = (currPingTarget.CurrStatusPingDateCurrent).Subtract(currPingTarget.PrevStatusPingDate);
+                                            string message2 = "(In previous state ["+currPingTarget.PrevHostPingStatus + "] for " + ToReadableString(duration) +")";
+                                            finalMessage += message2;
+                                        }
                                     } 
 
                                     LogThis(finalMessage);
@@ -1275,7 +1298,7 @@ namespace Pinger
 
         public static void ShowSummary(List<PingerTarget> targets)
         {
-            LogThis ("\n--- ping statistics ---");
+            LogThis ("\n--- pinger statistics ---");
             foreach (PingerTarget currPingTarget in targets)
             {
                 // Packet sent
@@ -1289,6 +1312,12 @@ namespace Pinger
                     pingCountLost = currPingTarget.HostUnreachableCount + " lost (Unreachable for a Total of "+ToReadableString(currPingTarget.HostUnreachableTimespan)+"), ";
                     percReach = percReachValue + "% packet loss";
                     LogThis (currPingTarget.DisplayName+": " + pingCount + pingCountLost + percReach);
+                    LogThis ("\t----- Disconnetion Report ------");
+                    foreach (DateRange dr in currPingTarget.UnreachableDates)
+                    {
+                        TimeSpan duration = (dr.End).Subtract(dr.Start);
+                        LogThis ("\t: ("+ ToReadableString(duration) +") Between " + dr.Start + " - " + dr.End);
+                    }
                 } else {
                     //pingCountLost = currPingTarget.HostUnreachableCount + " lost, ";
                     percReach = "0.0% loss";
