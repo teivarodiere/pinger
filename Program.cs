@@ -1317,7 +1317,7 @@ namespace Pinger
 
                     pingCountLost = currPingTarget.HostUnreachableCount + " lost" +  unreachableFor; 
                     percReach = ", "+percReachValue + "% packet loss";
-                    LogThis (currPingTarget.DisplayName+": " + pingCount + pingCountLost + percReach);
+                    LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + pingCountLost + percReach);
                     if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
                     {
                         LogThis ("\t: ----- Disconnection Report ------");
