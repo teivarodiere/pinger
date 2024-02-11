@@ -1305,14 +1305,23 @@ namespace Pinger
                 string pingCount = currPingTarget.CurrHostPingCount + " packets transmitted, ";
                 // Packets Lost
                 string pingCountLost;
+                string unreachableFor="";
                 string percReach;
                 double percReachValue = Math.Round(Convert.ToDouble(currPingTarget.HostUnreachableCount) / Convert.ToDouble(currPingTarget.CurrHostPingCount) * 100,2);
                 if (currPingTarget.HostUnreachableCount > 0)
                 {
-                    pingCountLost = currPingTarget.HostUnreachableCount + " lost (Unreachable for a Total of "+ToReadableString(currPingTarget.HostUnreachableTimespan)+"), ";
-                    percReach = percReachValue + "% packet loss";
+                     if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
+                    {
+                        unreachableFor = "(Unreachable for a Total of "+ToReadableString(currPingTarget.HostUnreachableTimespan)+")";
+                    }
+
+                    pingCountLost = currPingTarget.HostUnreachableCount + " lost" +  unreachableFor; 
+                    percReach = ", "+percReachValue + "% packet loss";
                     LogThis (currPingTarget.DisplayName+": " + pingCount + pingCountLost + percReach);
-                    LogThis ("\t----- Disconnetion Report ------");
+                    if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
+                    {
+                        LogThis ("\t: ----- Disconnection Report ------");
+                    }
                     foreach (DateRange dr in currPingTarget.UnreachableDates)
                     {
                         TimeSpan duration = (dr.End).Subtract(dr.Start);
@@ -1321,7 +1330,7 @@ namespace Pinger
                 } else {
                     //pingCountLost = currPingTarget.HostUnreachableCount + " lost, ";
                     percReach = "0.0% loss";
-                    LogThis (currPingTarget.DisplayName+": " + pingCount + percReach);
+                    LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + percReach);
                 }
             }
         }
