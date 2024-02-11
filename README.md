@@ -3,22 +3,22 @@ Pinger <hosts> [OPTIONS]
 [HOSTS]: 
         single or multiple hostnames,fqdn,ipv4, and ipv6 IP addresses. Must comma separate (no spaces).
         
-[OPTIONS]: 
+[OPTIONS]:
         -n:     Pinger runs once then exists
-        -d <n>: Set the amount of duration in Decimal pinger runs for before exiting - Specify a positive value such as 0.25 for 15 minutes or 1.5 for 1hr20mins.
+                -d <n>: Set the amount of duration in Decimal pinger runs for before exiting - Specify a positive value such as 0.25 for 15 minutes or 1.5 for 1hr20mins.
         -c <n>: Specify how many times pinger will poll before exiting - Specify a positive value 'n' greater than 1.
         -s:     Runs like a Standard ping which prints every ping results onscreen.
         -p <n>: Specify how often (in seconds) Pinger will poll the target. Useful with '-s'. Specify a positive value 'n' greater than 1.
         -t <n>: Set a Round Trip timeout value of 'n' seconds - Default value is 1 seconds. For high latency links above 4000ms latency, 
                 increase this value above 4. When this value is reached, pinger will assume the target is unreachable.
         -q:     (Windows only) Mute default audible alarms. By default, pinger will beep when the status changes in the following instance.
-                > 2 beeps when Status transitions from Timeout to Pingable
+                        > 2 beeps when Status transitions from Timeout to Pingable
                 > 4 beeps when Status transitions from Pingble to TimeOut
         -f:     Fastping makes pinger starts a new poll as soon it receives the previous response. Fastping is automatically 
                 activated when the Round Trip is above 1 seconds. Use in combination with the '-s' switch.
-        -csv:   Saves all onscreen responses to a CSV. Does not yet take any arguments. The resultant CSV is prefixed with 
+                -csv:   Saves all onscreen responses to a CSV. Does not yet take any arguments. The resultant CSV is prefixed with 
                 the target name in your current directory.
-        -csvall:Saves all ping results to a CSV even regardless what's onscreen. Useful when wanting only the differences in
+                -csvall:Saves all ping results to a CSV even regardless what's onscreen. Useful when wanting only the differences in
                 results onscreen but all of the ping results in a CSV. 
                 The resultant CSV is prefixed with the target name in your current directory.
         -skipDnsLookup:         Skip DNS lookup.
