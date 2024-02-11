@@ -31,6 +31,8 @@ Pinger <hosts> [OPTIONS]
         -r:     Return Code only. Pinger does verbose to screen (0=Pingable,1=failure).
 
 **Examples: **
+
+
 ❯ pinger google.com.au -v -i
 2 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
 Target 1: google.com.au (142.251.221.67) DnsOK
