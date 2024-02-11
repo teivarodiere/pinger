@@ -1,4 +1,5 @@
-Syntax  : Pinger <hosts> [OPTIONS]
+Syntax  :
+Pinger <hosts> [OPTIONS]
 [HOSTS]: 
         single or multiple hostnames,fqdn,ipv4, and ipv6 IP addresses. Must comma separate (no spaces).
         
@@ -41,7 +42,7 @@ google.com.au-IP-1,2404:6800:4006:814::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffe
 google.com.au (142.251.221.67): 3 packets transmitted, 0.0% loss
 google.com.au-IP-1 (2404:6800:4006:814::2003): 2 packets transmitted, 2 lost, 100% packet loss
 
-
+Developed under MacOS VSCODE
  
         (MaOS) pinger google.com.au,fd8a:4d23:a340:4960:250:56ff:febb:a99d,192.168.0.1
         (MaOS) mono pinger.exe google.com.au,fd8a:4d23:a340:4960:250:56ff:febb:a99d,192.168.0.1
