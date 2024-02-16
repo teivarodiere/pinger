@@ -45,14 +45,67 @@ Pinger <hosts> [OPTIONS]
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Example 1# Simple ping
-        ❯ pinger google.com.au
-        Success | google.com.au (142.250.204.3) 
-        
-        ....Ctrl+C
+        ❯ pinger google.com.au,sdngad,8.8.8.8
+        Success | google.com.au (142.251.221.67) 
+        Success | dns.google (8.8.4.4) 
+        ....Ctrl+C...
+        --- pinger statistics ---
+        google.com.au (142.251.221.67): 4 packets transmitted, 0.0% loss
+        dns.google (8.8.4.4): 4 packets transmitted, 0.0% loss
+
+        # Same simple ping as before with a bit more info
+        ❯ pinger google.com.au,sdngad,8.8.8.8 -v
+        3 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+        Target 1: google.com.au (142.251.221.67) DnsOK
+        Target 0: sdngad (nodename nor servname provided, or not known) <- Skipping
+        Target 3: dns.google (8.8.4.4) DnsOK
+        google.com.au,142.251.221.67,Success,RT=31ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        dns.google,8.8.4.4,Success,RT=27ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        ....Ctrl+C...
+        --- pinger statistics ---
+        google.com.au (142.251.221.67): 36 packets transmitted, 0.0% loss
+        dns.google (8.8.4.4): 36 packets transmitted, 0.0% loss
+
+        # Same simple ping as before with a bit more info, AND ping all resolvable interfaces (ipv4 and ipv6)
+        ❯ pinger google.com.au,sdngad,8.8.8.8 -v -i
+        7 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+        Target 1: google.com.au (142.251.221.67) DnsOK
+        Target 2: google.com.au-IP-1 (2404:6800:4006:80b::2003) DnsOK
+        Target 2: sdngad (nodename nor servname provided, or not known) <- Skipping
+        Target 4: dns.google (8.8.4.4) DnsOK
+        Target 5: dns.google-IP-2 (8.8.8.8) DnsOK
+        Target 6: dns.google-IP-3 (2001:4860:4860::8844) DnsOK
+        Target 7: dns.google-IP-4 (2001:4860:4860::8888) DnsOK
+        google.com.au,142.251.221.67,Success,RT=71ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        google.com.au-IP-1,2404:6800:4006:80b::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        dns.google,8.8.4.4,Success,RT=76ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        dns.google-IP-2,8.8.8.8,Success,RT=24ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        dns.google-IP-3,2001:4860:4860::8844,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        dns.google-IP-4,2001:4860:4860::8888,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
         
         --- pinger statistics ---
-        google.com.au (142.250.204.3): 4 packets transmitted, 0.0% loss
+        google.com.au (142.251.221.67): 12 packets transmitted, 0.0% loss
+        google.com.au-IP-1 (2404:6800:4006:80b::2003): 12 packets transmitted, 12 lost, 100% packet loss
+        dns.google (8.8.4.4): 12 packets transmitted, 0.0% loss
+        dns.google-IP-2 (8.8.8.8): 12 packets transmitted, 0.0% loss
+        dns.google-IP-3 (2001:4860:4860::8844): 12 packets transmitted, 12 lost, 100% packet loss
+        dns.google-IP-4 (2001:4860:4860::8888): 11 packets transmitted, 11 lost, 100% packet loss
+
+        # Same simple ping as before with a bit more info, AND ping all resolvable IPs but ipv6 addresses only
+        ❯ pinger google.com.au,sdngad,8.8.8.8 -v -i -ipv6
+        4 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+        Target 1: google.com.au (2404:6800:4006:80b::2003) DnsOK
+        Target 2: sdngad (nodename nor servname provided, or not known) <- Skipping
+        Target 3: dns.google (2001:4860:4860::8844) DnsOK
+        Target 4: dns.google-IP-1 (2001:4860:4860::8888) DnsOK
+        google.com.au,2404:6800:4006:80b::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        dns.google,2001:4860:4860::8844,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        dns.google-IP-1,2001:4860:4860::8888,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
         
+        --- pinger statistics ---
+        google.com.au (2404:6800:4006:80b::2003): 2 packets transmitted, 2 lost, 100% packet loss
+        dns.google (2001:4860:4860::8844): 2 packets transmitted, 2 lost, 100% packet loss
+        dns.google-IP-1 (2001:4860:4860::8888): 2 packets transmitted, 2 lost, 100% packet loss
 Example 2# Ping All interfaces resolved by DNS, and show a bit more info
         ❯ pinger google.com.au -v -i
         2 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
@@ -62,9 +115,7 @@ Example 2# Ping All interfaces resolved by DNS, and show a bit more info
         google.com.au-IP-1,2404:6800:4006:809::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
         google.com.au,142.251.221.67,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=9(In previous state [Success] for 8 seconds)
         google.com.au,142.251.221.67,Success,RT=25ms,ttl=64,Frag=True,replyBuffer=64,count=10(In previous state [TimedOut] for 3 seconds)
-        
-        ....Ctrl+C
-
+        ....Ctrl+C...
         --- pinger statistics ---
         google.com.au (142.251.221.67): 15 packets transmitted, 1 lost(Unreachable for a Total of 3 seconds), 6.67% packet loss
                 : ----- Disconnection Report ------
