@@ -12,6 +12,16 @@ Some features are:
         
 This program is developed under Visual Studio Code under MacOS. 
 </pre>
+_Installation_
+<pre>
+[MacOS only]
+        a) Download "pinger" from the release to where ever
+        b) Set executable permission on pinger via terminal
+        <pre>❯ chmod +x ~/Downloads/pinger </pre>
+        c) Run it 
+        <pre>❯ ~/Downloads/pinger </pre>
+        d) 
+</pre>
 _Syntax_
 <pre>
 pinger [HOST LIST] [OPTIONS], or 
