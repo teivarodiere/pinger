@@ -1,5 +1,6 @@
 This Ping utility alternative aims to deliver more features than the built-in 'ping' utility.
-<img width="869" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/c2d5c6e9-efb1-4506-b61d-586f839c5800">
+<img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/a877e27a-4c9a-423c-8bf8-21926cb79e7e">
+
 
 <pre>
 Some features are:
@@ -31,7 +32,8 @@ _Installation_
                 Then click OK
                         <img width="272" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/7092abd9-1e9d-4205-803e-cf2cd44b0132">
                 This is what it looks like when it works
-                        <img width="869" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/08f08ad0-6a9e-4083-8508-9dca2674943b">
+                        <img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/5bf0bbdc-dfce-4975-ac1f-7999592994f8">
+
 </pre>
 _Syntax_
 <pre>
