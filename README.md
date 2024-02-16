@@ -17,9 +17,9 @@ Some features are:
 - Ctrl+C to cancel the utility which provides a disconnection report (Start, End, and Lenght it was disconnected).
 - Can ask pinger to only ping ipv6 addresses for a single target
 - Refer to the options below for more options
-        
-This program is developed under Visual Studio Code under MacOS. 
 </pre>
+_Development Information_
+<pre>This program is developed under Visual Studio Code under MacOS. </pre>
 _Installation_
 <pre>
 [Windows only]
