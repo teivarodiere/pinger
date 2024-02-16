@@ -1310,7 +1310,7 @@ namespace Pinger
                 double percReachValue = Math.Round(Convert.ToDouble(currPingTarget.HostUnreachableCount) / Convert.ToDouble(currPingTarget.CurrHostPingCount) * 100,2);
                 if (currPingTarget.HostUnreachableCount > 0)
                 {
-                     if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
+                    if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
                     {
                         unreachableFor = "(Unreachable for a Total of "+ToReadableString(currPingTarget.HostUnreachableTimespan)+")";
                     }
