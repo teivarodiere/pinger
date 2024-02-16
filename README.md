@@ -1,8 +1,11 @@
 This network ping utility alternative aims to deliver more features than the built-in 'ping' utility on mac and windows. The binaries for windows and macos, and source code are available. 
 It is built in visual studio code and .NET 7 (at this stage), and aims to provide the same experience in both desktop.
 
+MacOS verison (M1)
 <img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/a877e27a-4c9a-423c-8bf8-21926cb79e7e">
 
+Windows 11 ARM version
+<img width="732" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/9ca8292e-dfaa-47d4-adb2-ce4027d62a35">
 
 <pre>
 Some features are:
