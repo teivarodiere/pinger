@@ -1,6 +1,11 @@
-This Ping utility alternative aims to deliver more features than the built-in 'ping' utility.
-<img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/a877e27a-4c9a-423c-8bf8-21926cb79e7e">
+This network ping utility alternative aims to deliver more features than the built-in 'ping' utility on MacOS and Windows. The binaries for windows 11 arm and macos M1 arm, and source code are available. 
+It is built in visual studio code and .NET 7 (at this stage), and aims to provide the same experience in both desktop. Can monitor a link, not specifically for speedtest as .NET is slower than C.
 
+MacOS verison (M1)
+<pre><img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/a877e27a-4c9a-423c-8bf8-21926cb79e7e"></pre>
+
+Windows 11 ARM version
+<pre><img width="732" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/9ca8292e-dfaa-47d4-adb2-ce4027d62a35"></pre>
 
 <pre>
 Some features are:
@@ -12,11 +17,18 @@ Some features are:
 - Ctrl+C to cancel the utility which provides a disconnection report (Start, End, and Lenght it was disconnected).
 - Can ask pinger to only ping ipv6 addresses for a single target
 - Refer to the options below for more options
-        
-This program is developed under Visual Studio Code under MacOS. 
 </pre>
+_Development Information_
+<pre>This program is developed under Visual Studio Code for MacOS (M1). The code is compiled under MacOS M1 (arm) and Windows 11 (arm), because that's what I own.</pre>
 _Installation_
 <pre>
+[Windows only]
+        a) Download it to your computer
+        b) Open a terminal
+        c) Execute pinger (pinger.exe)
+        Windows should prompt you to **Unblock** it, you have to to proceed.
+        d) [Optional] You can modify your Path variables and add the path where pinger.exe lives into your global path.
+        
 [MacOS only]
         a) Download "pinger" from the release to where ever
         b) Set executable permission on pinger via terminal
@@ -33,7 +45,10 @@ _Installation_
                         <img width="272" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/7092abd9-1e9d-4205-803e-cf2cd44b0132">
                 This is what it looks like when it works
                         <img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/5bf0bbdc-dfce-4975-ac1f-7999592994f8">
+        e) [Optional] create an alias for pinger (for example, add the following to .zshrc)
+                alias pinger=~/Downloads/pinger
 
+        
 </pre>
 _Syntax_
 <pre>
