@@ -989,7 +989,6 @@ namespace Pinger
                     recordsIndex++;
                 }
             }
-
             /* 
                 STEP 4: Creating the final list of Targets");
             */
@@ -1144,7 +1143,27 @@ namespace Pinger
                             //Probe(currPingTarget.IPAddress.ToString(), timeoutms, buffer, options);
                             Ping ping = new Ping();
                             Object userToken = new object();
-                            PingReply pr = await PingExtensions.SendTask(ping, currPingTarget.IPAddress.ToString(), timeoutms, buffer, options, userToken);
+                            PingReply pr;
+                            string hostnameToDisplay = "";
+                            if (currPingTarget.IPAddress != null)
+                            {
+                                // LogThis("currPingTarget.IPAddress.ToString(): " + currPingTarget.IPAddress.ToString());
+                                // LogThis(" timeoutms: " + timeoutms);
+                                // LogThis(" buffer: " + buffer);
+                                // LogThis(" options: " + options);
+                                // LogThis(" userToken: " + userToken);
+                                pr = await PingExtensions.SendTask(ping, currPingTarget.IPAddress.ToString(), timeoutms, buffer, options, userToken);
+                                hostnameToDisplay = currPingTarget.IPAddress.ToString();
+
+                            } else {
+                                // LogThis("currPingTarget.LookupString: " + currPingTarget.LookupString);
+                                // LogThis(" timeoutms: " + timeoutms);
+                                // LogThis(" buffer: " + buffer);
+                                // LogThis(" options: " + options);
+                                // LogThis(" userToken: " + userToken);
+                                pr = await PingExtensions.SendTask(ping, currPingTarget.LookupString, timeoutms, buffer, options, userToken);
+                                hostnameToDisplay = currPingTarget.LookupString;
+                            }                            
                             currPingTarget.CurrHostPingCount++;
                             //https://stackoverflow.com/questions/45150837/running-a-ping-sendasync-with-status-message
 
@@ -1158,20 +1177,20 @@ namespace Pinger
                                 switch (pr.Status)
                                 {
                                     case IPStatus.Success:
-                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + currPingTarget.IPAddress.ToString()+ Globals.SEPARATOR_CHAR + Globals.SUCCESS_STATUS_STRING + Globals.SEPARATOR_CHAR +"RT=" + pr.RoundtripTime + "ms" + Globals.SEPARATOR_CHAR +"ttl=" + pr.Options.Ttl +  Globals.SEPARATOR_CHAR +"Frag=" + pr.Options.DontFragment +  Globals.SEPARATOR_CHAR + "replyBuffer=" + pr.Buffer.Length + Globals.SEPARATOR_CHAR +"count="+currPingTarget.CurrHostPingCount;
-                                        message = Globals.SUCCESS_STATUS_STRING +"\t| " + currPingTarget.DisplayName + " ("+currPingTarget.IPAddress.ToString()+")" ;
+                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + hostnameToDisplay + Globals.SEPARATOR_CHAR + Globals.SUCCESS_STATUS_STRING + Globals.SEPARATOR_CHAR +"RT=" + pr.RoundtripTime + "ms" + Globals.SEPARATOR_CHAR +"ttl=" + pr.Options.Ttl +  Globals.SEPARATOR_CHAR +"Frag=" + pr.Options.DontFragment +  Globals.SEPARATOR_CHAR + "replyBuffer=" + pr.Buffer.Length + Globals.SEPARATOR_CHAR +"count="+currPingTarget.CurrHostPingCount;
+                                        message = Globals.SUCCESS_STATUS_STRING +"\t| " + currPingTarget.DisplayName + " ("+hostnameToDisplay+")" ;
                                         currPingTarget.HostReachableCount++;
                                         // If we enter into the =
                                         break;
                                     case IPStatus.TimedOut:
-                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + currPingTarget.IPAddress.ToString() + Globals.SEPARATOR_CHAR + Globals.TIMEDOUT_STATUS_STRING + Globals.SEPARATOR_CHAR + "RT=-"+ Globals.SEPARATOR_CHAR+ "ttl=-" +Globals.SEPARATOR_CHAR + "Frag=-" + Globals.SEPARATOR_CHAR+ "replyBuffer=-" + Globals.SEPARATOR_CHAR + "count="+currPingTarget.CurrHostPingCount;
-                                        message = Globals.TIMEDOUT_STATUS_STRING + "\t| " + currPingTarget.DisplayName+ " ("+currPingTarget.IPAddress.ToString()+") ";
+                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + hostnameToDisplay + Globals.SEPARATOR_CHAR + Globals.TIMEDOUT_STATUS_STRING + Globals.SEPARATOR_CHAR + "RT=-"+ Globals.SEPARATOR_CHAR+ "ttl=-" +Globals.SEPARATOR_CHAR + "Frag=-" + Globals.SEPARATOR_CHAR+ "replyBuffer=-" + Globals.SEPARATOR_CHAR + "count="+currPingTarget.CurrHostPingCount;
+                                        message = Globals.TIMEDOUT_STATUS_STRING + "\t| " + currPingTarget.DisplayName+ " ("+hostnameToDisplay+") ";
                                         currPingTarget.HostUnreachableCount++;
                                         
                                         break;
                                     default:
-                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + currPingTarget.IPAddress.ToString() + Globals.SEPARATOR_CHAR + Globals.OTHER_STATUS_STRING + Globals.SEPARATOR_CHAR + "RT=-"+ Globals.SEPARATOR_CHAR+ "ttl=-" +Globals.SEPARATOR_CHAR + "Frag=-" + Globals.SEPARATOR_CHAR+ "replyBuffer=-" + Globals.SEPARATOR_CHAR + "count="+currPingTarget.CurrHostPingCount;
-                                        message = Globals.OTHER_STATUS_STRING + "\t| " + currPingTarget.DisplayName + " ("+currPingTarget.IPAddress.ToString()+") ";
+                                        messageVerbose = currPingTarget.DisplayName + Globals.SEPARATOR_CHAR + hostnameToDisplay + Globals.SEPARATOR_CHAR + Globals.OTHER_STATUS_STRING + Globals.SEPARATOR_CHAR + "RT=-"+ Globals.SEPARATOR_CHAR+ "ttl=-" +Globals.SEPARATOR_CHAR + "Frag=-" + Globals.SEPARATOR_CHAR+ "replyBuffer=-" + Globals.SEPARATOR_CHAR + "count="+currPingTarget.CurrHostPingCount;
+                                        message = Globals.OTHER_STATUS_STRING + "\t| " + currPingTarget.DisplayName + " ("+ hostnameToDisplay +") ";
                                         currPingTarget.HostUnreachableCount++;
                                         break;
                                 }
@@ -1215,6 +1234,8 @@ namespace Pinger
                                     currPingTarget.PrevStatusPingDate = currPingTarget.CurrStatusPingDateCurrent;
                                 }
                                 currPingTarget.PrevHostPingStatus = currPingTarget.CurrHostPingStatus;
+                            } else {
+                                LogThis(">>> Or here");
                             }
                            // screen += finalMessage;
                         }
@@ -1317,7 +1338,12 @@ namespace Pinger
 
                     pingCountLost = currPingTarget.HostUnreachableCount + " lost" +  unreachableFor; 
                     percReach = ", "+percReachValue + "% packet loss";
-                    LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + pingCountLost + percReach);
+                    if (currPingTarget.IPAddress != null)
+                    {
+                        LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + pingCountLost + percReach);
+                    } else {
+                         LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.LookupString + "): " + pingCount + pingCountLost + percReach);
+                    }
                     if (currPingTarget.HostUnreachableCount != currPingTarget.CurrHostPingCount)
                     {
                         LogThis ("\t: ----- Disconnection Report ------");
@@ -1330,7 +1356,12 @@ namespace Pinger
                 } else {
                     //pingCountLost = currPingTarget.HostUnreachableCount + " lost, ";
                     percReach = "0.0% loss";
-                    LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + percReach);
+                     if (currPingTarget.IPAddress != null)
+                    {
+                        LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.IPAddress.ToString() + "): " + pingCount + percReach);
+                    } else {
+                        LogThis (currPingTarget.DisplayName+" ("+ currPingTarget.LookupString + "): " + pingCount + percReach);
+                    }
                 }
             }
         }
@@ -1730,8 +1761,8 @@ namespace Pinger
                              "\t-t <n>:\tSet a Round Trip timeout value of 'n' seconds - Default value is 1 seconds. For high latency links above 4000ms latency, \n\t\tincrease this value above 4. When this value is reached, pinger will assume the target is unreachable.\n" +
                              "\t-q: \tMute default audible alarms. By default, pinger will beep when the status changes in the following instance.\n\t\t> 2 beeps when Status transitions from Timeout to Pingable\n\t\t> 4 beeps when Status transitions from Pingble to TimeOut\n" +
                              "\t-f: \tFastping makes pinger starts a new poll as soon it receives the previous response. Fastping is automatically \n\t\tactivated when the Round Trip is above 1 seconds. Use in combination with the '-s' switch.\n" +
-                             "\t-csv: \tSaves all onscreen responses to a CSV. Does not yet take any arguments. The resultant CSV is prefixed with \n\t\tthe target name in your current directory.\n" +
-                             "\t-csvall:Saves all ping results to a CSV even regardless what's onscreen. Useful when wanting only the differences in\n\t\tresults onscreen but all of the ping results in a CSV. \n\t\tThe resultant CSV is prefixed with the target name in your current directory.\n" +
+                            //  "\t-csv: \tSaves all onscreen responses to a CSV. Does not yet take any arguments. The resultant CSV is prefixed with \n\t\tthe target name in your current directory.\n" +
+                            //  "\t-csvall:Saves all ping results to a CSV even regardless what's onscreen. Useful when wanting only the differences in\n\t\tresults onscreen but all of the ping results in a CSV. \n\t\tThe resultant CSV is prefixed with the target name in your current directory.\n" +
                              "\t-skipDnsLookup: \tSkip DNS lookup.\n" +
                              "\t-dnsonly: \tPing DNS resolvable targets only from the list.\n" +
                              "\t-i: \tPing all IP addresses enumerated from the NSLOOKUP query.\n" +
@@ -1752,13 +1783,19 @@ namespace Pinger
 
             LogThis("Examples: \n" +
                             "\tSmart ping server1, and only report when the status changes\n" +
-                             "\t\tmono pinger.exe server1\n" +
-                             "\tSmart ping multiple servers and only report when the status changes\n" +
-                             "\t\tmono pinger.exe server1,server2,server3\n" +
-                             "\tRun a standard ping on a single server 10 times\n" +
-                             "\t\tmono pinger.exe server1 -s -c 10\n" +
-                             "\tRun a standard ping on a single server 10 times but verbose the output and stop the audible noise on status changes \n" +
-                             "\t\tmono pinger.exe server1 -s -c 10 -v -q\n");
+                            "\t\t(Windows) pinger.exe server1\n" +
+                            "\tPing these servers with minimum output info\n" +
+                            "\t\t(MacOS) pinger server1,8.8.8.8,google.com.au\n" +
+                            "\tPing these servers but show a bit more info\n" +
+                            "\t\t(MacOS) pinger server1,8.8.8.8,google.com.au -v\n" +
+                            "\tPing these servers, but skip initial DNS Lookup, and  show a bit more info\n" +
+                            "\t\t(MacOS) pinger server1,8.8.8.8,google.com.au -skipDnsLookup -v\n" +
+                            "\tPing only server1's Ipv6 interfaces\n" +
+                            "\t\t(MacOS) pinger server1 -i -ipv6\n" +
+                            "\tRun a standard ping on a single server 10 times\n" +
+                            "\t\tpinger server1 -s -c 10\n" +
+                            "\tRun a standard ping on a single server 10 times but verbose the output and stop the audible noise on status changes \n" +
+                            "\t\tpinger.exe server1 -s -c 10 -v -q\n");
             ShowHeader();
         }
     }
