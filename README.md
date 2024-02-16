@@ -17,6 +17,13 @@ This program is developed under Visual Studio Code under MacOS.
 </pre>
 _Installation_
 <pre>
+[Windows only]
+        a) Download it to your computer
+        b) Open a terminal
+        c) Execute pinger (pinger.exe)
+        Windows should prompt you to **Unblock** it, you have to to proceed.
+        d) [Optional] You can modify your Path variables and add the path where pinger.exe lives into your global path.
+        
 [MacOS only]
         a) Download "pinger" from the release to where ever
         b) Set executable permission on pinger via terminal
@@ -33,7 +40,10 @@ _Installation_
                         <img width="272" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/7092abd9-1e9d-4205-803e-cf2cd44b0132">
                 This is what it looks like when it works
                         <img width="860" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/5bf0bbdc-dfce-4975-ac1f-7999592994f8">
+        e) [Optional] create an alias for pinger (for example, add the following to .zshrc)
+                alias pinger=~/Downloads/pinger
 
+        
 </pre>
 _Syntax_
 <pre>
