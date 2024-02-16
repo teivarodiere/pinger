@@ -14,8 +14,10 @@ This program is developed under Visual Studio Code under MacOS.
 </pre>
 _Syntax_
 <pre>
-Pinger <hosts> [OPTIONS]
-[HOSTS]: 
+pinger [HOST LIST] [OPTIONS], or 
+pinger [OPTIONS] [HOST LIST] 
+
+[HOSTS LIST]: 
         single or multiple hostnames,fqdn,ipv4, and ipv6 IP addresses. Must comma separate (no spaces).
         
 [OPTIONS]:
