@@ -59,7 +59,22 @@ Example 2# Ping All interfaces resolved by DNS, and show a bit more info
         google.com.au-IP-1 (2404:6800:4006:809::2003): 14 packets transmitted, 14 lost, 100% packet loss
 
 Example: Simple ping but skip DNS lookup pre-routing
-         ❯ pinger 8.8.8.8 -skipDnsLookup
+        ❯ pinger 8.8.8.8 -v -i
+        4 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+        Target 1: dns.google (8.8.4.4) DnsOK
+        Target 2: dns.google-IP-1 (8.8.8.8) DnsOK
+        Target 3: dns.google-IP-2 (2001:4860:4860::8844) DnsOK
+        Target 4: dns.google-IP-3 (2001:4860:4860::8888) DnsOK
+        dns.google,8.8.4.4,Success,RT=29ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        dns.google-IP-1,8.8.8.8,Success,RT=25ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        dns.google-IP-2,2001:4860:4860::8844,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        dns.google-IP-3,2001:4860:4860::8888,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        
+        --- pinger statistics ---
+        dns.google (8.8.4.4): 4 packets transmitted, 0.0% loss
+        dns.google-IP-1 (8.8.8.8): 4 packets transmitted, 0.0% loss
+        dns.google-IP-2 (2001:4860:4860::8844): 4 packets transmitted, 4 lost, 100% packet loss
+        dns.google-IP-3 (2001:4860:4860::8888): 3 packets transmitted, 3 lost, 100% packet loss
         
 Developed under MacOS VSCODE
  
