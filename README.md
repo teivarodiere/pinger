@@ -1,3 +1,16 @@
+<pre>
+        This Ping utility alternative aims to deliver more features than the built-in 'ping' utility.
+        Some features are:
+                - Dns Lookup 1st to obtain all resolvable IPs for a hostname or names from a reverse lookup. Uses local DNS - Cannot specify A DNS server.
+                - Only verboses on screen when there is a status change
+                - On status change pinger reports how long the target spent in previous status. ie. 5 minutes in Timeout
+                - Can specify multiple Ips and hostnames using comma separated list.
+                - Multiple options such as ping like a standard ping utility (verboses every return echo) using '-s'
+                - Ctrl+C to cancel the utility which provides a disconnection report (Start, End, and Lenght it was disconnected).
+                - Can ask pinger to only ping ipv6 addresses for a single target
+                - Refer to the options below for more options
+        This program is developed under Visual Studio Code under MacOS. 
+</pre>
 <pre>Syntax  :
 Pinger <hosts> [OPTIONS]
 [HOSTS]: 
@@ -76,7 +89,7 @@ Example: Simple ping but skip DNS lookup pre-routing
         dns.google-IP-2 (2001:4860:4860::8844): 4 packets transmitted, 4 lost, 100% packet loss
         dns.google-IP-3 (2001:4860:4860::8888): 3 packets transmitted, 3 lost, 100% packet loss
         
-Developed under MacOS VSCODE
+
  
         (MaOS) pinger google.com.au,fd8a:4d23:a340:4960:250:56ff:febb:a99d,192.168.0.1
         (MaOS) mono pinger.exe google.com.au,fd8a:4d23:a340:4960:250:56ff:febb:a99d,192.168.0.1
