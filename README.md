@@ -1,4 +1,6 @@
 This Ping utility alternative aims to deliver more features than the built-in 'ping' utility.
+<img width="869" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/c2d5c6e9-efb1-4506-b61d-586f839c5800">
+
 <pre>
 Some features are:
 - Dns Lookup 1st to obtain all resolvable IPs for a hostname or names from a reverse lookup. Uses local DNS - Cannot specify A DNS server.
@@ -17,10 +19,19 @@ _Installation_
 [MacOS only]
         a) Download "pinger" from the release to where ever
         b) Set executable permission on pinger via terminal
-        <pre>❯ chmod +x ~/Downloads/pinger </pre>
+                ❯ chmod +x ~/Downloads/pinger
         c) Run it 
-        <pre>❯ ~/Downloads/pinger </pre>
-        d) 
+                ❯ ~/Downloads/pinger
+        d) You should get a warning from MacOS like 
+                        <img width="270" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/55bb87aa-e028-4156-9e78-605337f98e85">
+                Then click [Allow Anyway]
+                        <img width="720" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/9fed5522-d8d3-4678-96f2-9afa5300abcf">
+                Then run the code again
+                        ❯ ~/Downloads/pinger
+                Then click OK
+                        <img width="272" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/7092abd9-1e9d-4205-803e-cf2cd44b0132">
+                This is what it looks like when it works
+                        <img width="869" alt="image" src="https://github.com/teivarodiere/pinger/assets/13279923/08f08ad0-6a9e-4083-8508-9dca2674943b">
 </pre>
 _Syntax_
 <pre>
