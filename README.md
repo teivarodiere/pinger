@@ -1,4 +1,4 @@
-Syntax  :
+<pre>Syntax  :
 Pinger <hosts> [OPTIONS]
 [HOSTS]: 
         single or multiple hostnames,fqdn,ipv4, and ipv6 IP addresses. Must comma separate (no spaces).
@@ -30,20 +30,37 @@ Pinger <hosts> [OPTIONS]
         -vv:    Verbose .
         -r:     Return Code only. Pinger does verbose to screen (0=Pingable,1=failure).
 
-**Examples: **
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Example 1# Simple ping
+        ❯ pinger google.com.au
+        Success | google.com.au (142.250.204.3) 
+        
+        ....Ctrl+C
+        
+        --- pinger statistics ---
+        google.com.au (142.250.204.3): 4 packets transmitted, 0.0% loss
+        
+Example 2# Ping All interfaces resolved by DNS, and show a bit more info
+        ❯ pinger google.com.au -v -i
+        2 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
+        Target 1: google.com.au (142.251.221.67) DnsOK
+        Target 2: google.com.au-IP-1 (2404:6800:4006:809::2003) DnsOK
+        google.com.au,142.251.221.67,Success,RT=25ms,ttl=64,Frag=True,replyBuffer=64,count=1
+        google.com.au-IP-1,2404:6800:4006:809::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
+        google.com.au,142.251.221.67,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=9(In previous state [Success] for 8 seconds)
+        google.com.au,142.251.221.67,Success,RT=25ms,ttl=64,Frag=True,replyBuffer=64,count=10(In previous state [TimedOut] for 3 seconds)
+        
+        ....Ctrl+C
 
+        --- pinger statistics ---
+        google.com.au (142.251.221.67): 15 packets transmitted, 1 lost(Unreachable for a Total of 3 seconds), 6.67% packet loss
+                : ----- Disconnection Report ------
+                : (3 seconds) Between 2/16/2024 12:10:20PM - 2/16/2024 12:10:23PM
+        google.com.au-IP-1 (2404:6800:4006:809::2003): 14 packets transmitted, 14 lost, 100% packet loss
 
-❯ pinger google.com.au -v -i
-2 hosts, 1sec intervals, ttl=64, RoundTripMaxTimeout 1 sec
-Target 1: google.com.au (142.251.221.67) DnsOK
-Target 2: google.com.au-IP-1 (2404:6800:4006:814::2003) DnsOK
-google.com.au,142.251.221.67,Success,RT=17ms,ttl=64,Frag=True,replyBuffer=64,count=1
-google.com.au-IP-1,2404:6800:4006:814::2003,NoReply,RT=-,ttl=-,Frag=-,replyBuffer=-,count=1
-
---- pinger statistics ---
-google.com.au (142.251.221.67): 3 packets transmitted, 0.0% loss
-google.com.au-IP-1 (2404:6800:4006:814::2003): 2 packets transmitted, 2 lost, 100% packet loss
-
+Example: Simple ping but skip DNS lookup pre-routing
+         ❯ pinger 8.8.8.8 -skipDnsLookup
+        
 Developed under MacOS VSCODE
  
         (MaOS) pinger google.com.au,fd8a:4d23:a340:4960:250:56ff:febb:a99d,192.168.0.1
@@ -60,3 +77,4 @@ Developed under MacOS VSCODE
                 pinger server1 -s -c 10
         Run a standard ping on a single server 10 times but verbose the output and stop the audible noise on status changes 
                 pinger server1 -s -c 10 -v -q
+</pre>
