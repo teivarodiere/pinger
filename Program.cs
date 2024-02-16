@@ -1,4 +1,10 @@
-﻿// pinger Utility
+﻿/**************************************************************************
+ * Pinger - Advanced command line ping tool
+ * Copyright (c) 2024 Teiva Rodiere
+ * https://github.com/teivarodiere/pinger
+ *************************************************************************/
+
+// pinger Utility
 // use 'pinger.exe /?' for help+
 using System;
 using System.Net.NetworkInformation;
