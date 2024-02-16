@@ -19,7 +19,7 @@ Some features are:
 - Refer to the options below for more options
 </pre>
 _Development Information_
-<pre>This program is developed under Visual Studio Code under MacOS. </pre>
+<pre>This program is developed under Visual Studio Code for MacOS (M1). The code is compiled under MacOS M1 (arm) and Windows 11 (arm), because that's what I own.</pre>
 _Installation_
 <pre>
 [Windows only]
