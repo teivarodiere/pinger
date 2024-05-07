@@ -780,6 +780,7 @@ namespace Pinger
                 LogThisVerbose("[" + MYFUNCTION + "] ++++++++++++++++++++++++++++++++++++");
                 LogThisVerbose("[" + MYFUNCTION + "] STEP 2: Filtering DnsHostObjects    ");
                 LogThisVerbose("[" + MYFUNCTION + "] ++++++++++++++++++++++++++++++++++++");
+                
                 string subFunction = "Foreach";
                 // Iterate through the targets by 1 DNS lookup, and 2 add finalise list into listDnsHostsObjects
                 int arrTargetsIndex = 0;
@@ -809,6 +810,7 @@ namespace Pinger
                         /*
                             ITERATE THROUGH THE LIST OF DnsHostObjects to use as input for pinger's list
                         */
+                        
                         subFunction = "Filtering Records";
                         if (
                             (hostLookupResults.DnsLookUpCode == ResultCodes.Ok) ||
@@ -827,7 +829,7 @@ namespace Pinger
                             bool tryagain = true; // If you need the 1st IP of IPV4 or IPV6, but DNS returns the opposite, you want to continue until you find a match
                             foreach (System.Net.IPAddress addr in hostLookupResults.IPAddresses)
                             {
-                                LogThisVerbose("[" + MYFUNCTION + "][" + subFunction + "] Exporting IP addresses for " + hostLookupResults.LookupString);
+                                LogThisVerbose("[" + MYFUNCTION + "][" + subFunction + "] Exporting IP addresses for " + hostLookupResults.LookupString);;
                                 DnsHostObject tmpDnsHostsObject = new DnsHostObject(hostLookupResults.LookupString);
                                 tmpDnsHostsObject.DnsResolvedHostname = hostLookupResults.DnsResolvedHostname;
                                 tmpDnsHostsObject.DnsLookUpMessage = hostLookupResults.DnsLookUpMessage;
@@ -861,6 +863,18 @@ namespace Pinger
                                     hostLookupResults.Skip = false;
                                     tryagain = false;
                                 }
+                                // If the ip address is 0.0.0.0 or ::0, ignore it
+                               
+                                     
+                                if ( (addr.ToString() == "0.0.0.0") || (addr.ToString() == "::0"))
+                                {
+                                     tmpDnsHostsObject.Skip = true;
+                                      LogThisVerbose ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                                    LogThisVerbose ("IP address = " + addr.ToString());
+                                    LogThisVerbose ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                                   
+                                }
+                                // 
                                 if (tryagain == false)
                                 {
                                     listDnsHostsObjects.Add(tmpDnsHostsObject);
@@ -1007,7 +1021,7 @@ namespace Pinger
             {
                 if (!tmpPingerT.Skip)
                 {
-                    if (!Globals.SKIP_DNS_LOOKUP && tmpPingerT.IPAddress != null)
+                    if (!Globals.SKIP_DNS_LOOKUP && tmpPingerT.IPAddress != null && (tmpPingerT.IPAddress.ToString() != "0.0.0.0") && (tmpPingerT.IPAddress.ToString() != "::0"))
                     {
                         LogThisVerbose("[" + MYFUNCTION + "] Target " + pingerTargetsIindex + ": " + tmpPingerT.DisplayName + "(" + tmpPingerT.IPAddress.ToString() + ")(skip=" + tmpPingerT.Skip + ")");
                     }
@@ -1151,8 +1165,8 @@ namespace Pinger
                             Object userToken = new object();
                             PingReply pr;
                             string hostnameToDisplay = "";
-                            if (currPingTarget.IPAddress != null)
-                            {
+                            if (currPingTarget.IPAddress != null && (currPingTarget.IPAddress.ToString() != "0.0.0.0"))
+                           {
                                 // LogThis("currPingTarget.IPAddress.ToString(): " + currPingTarget.IPAddress.ToString());
                                 // LogThis(" timeoutms: " + timeoutms);
                                 // LogThis(" buffer: " + buffer);
